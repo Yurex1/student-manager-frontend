@@ -82,7 +82,7 @@ export default function Home() {
 
   const getAllSchools = async (): Promise<SchoolType[] | undefined> => {
     try {
-      const response = await axios.get("${API_URL}/api/schools", {
+      const response = await axios.get(`${API_URL}/api/schools`, {
         withCredentials: true,
       });
       setIsLoading(false);
@@ -96,7 +96,7 @@ export default function Home() {
   const createNewSchool = async () => {
     try {
       const response = await axios.post(
-        "${API_URL}/api/schools",
+        `${API_URL}/api/schools`,
         {
           name: schoolName,
           type: schoolType,

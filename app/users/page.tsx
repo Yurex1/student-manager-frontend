@@ -48,7 +48,7 @@ const UsersPage = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("${API_URL}/api/users", {
+      const response = await axios.get(`${API_URL}/api/users`, {
         withCredentials: true,
       });
       setUsers(response.data);
@@ -60,7 +60,7 @@ const UsersPage = () => {
 
   const fetchSchools = async () => {
     try {
-      const response = await axios.get("${API_URL}/api/schools", {
+      const response = await axios.get(`${API_URL}/api/schools`, {
         withCredentials: true,
       });
       setSchools(response.data);
@@ -125,7 +125,7 @@ const UsersPage = () => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
 
     try {
-      await axios.delete("${API_URL}/api/users", {
+      await axios.delete(`${API_URL}/api/users`, {
         data: { ids: [id] },
         withCredentials: true,
       });

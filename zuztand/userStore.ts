@@ -1,3 +1,4 @@
+import { API_URL } from "@/app/config/API_URL";
 import axios from "axios";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -34,7 +35,7 @@ export const useUserStore = create<UserState>()(
         })),
       logoutUser: () => {
         axios.post(
-          "${API_URL}/api/auth/logout",
+          `${API_URL}/api/auth/logout`,
           {},
           {
             withCredentials: true,

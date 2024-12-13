@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import axios from "axios";
 import SchoolType from "@/types/schoolType";
+import { API_URL } from "../config/API_URL";
 
 interface CreateStudentModalProps {
   show: boolean;
@@ -44,7 +45,7 @@ const CreateStudentModal: React.FC<CreateStudentModalProps> = ({
     }
     try {
       const response = await axios.post(
-        "${API_URL}/api/students",
+        `${API_URL}/api/students`,
         {
           fullName: studentFullName,
           formOfStudy: studentFormOfStudy,

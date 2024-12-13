@@ -71,7 +71,7 @@ export default function StudentsPage() {
 
   const getAllSchools = async (): Promise<SchoolType[] | undefined> => {
     try {
-      const response = await axios.get("${API_URL}/api/schools", {
+      const response = await axios.get(`${API_URL}/api/schools`, {
         withCredentials: true,
       });
       setIsLoading(false);
@@ -84,7 +84,7 @@ export default function StudentsPage() {
 
   const getAllStudents = async (): Promise<StudentType[] | undefined> => {
     try {
-      const response = await axios.get("${API_URL}/api/students", {
+      const response = await axios.get(`${API_URL}/api/students`, {
         withCredentials: true,
       });
       setIsLoading(false);
