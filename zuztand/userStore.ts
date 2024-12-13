@@ -1,3 +1,4 @@
+import axios from "axios";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -17,6 +18,7 @@ interface UserState {
   setUser: (user: User | null) => void;
   updateUser: (updatedUser: Partial<User>) => void;
   logoutUser: () => void;
+  setError: (error: string) => void;
 }
 
 export const useUserStore = create<UserState>()(
@@ -31,9 +33,19 @@ export const useUserStore = create<UserState>()(
           user: state.user ? { ...state.user, ...updatedUser } : null,
         })),
       logoutUser: () => {
-        localStorage.removeItem("authToken");
+        axios.post(
+          "http://localhost:8030/api/auth/logout",
+          {},
+          {
+            withCredentials: true,
+          }
+        );
         set({ user: null });
+        set({ error: null });
+        console.log("User logged out");
+        window.location.href = "/login";
       },
+      setError: (error) => set({ error }),
     }),
     {
       name: "user-storage",

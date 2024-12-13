@@ -1,76 +1,138 @@
 "use client";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Table, Modal, Form } from "react-bootstrap";
-import { useRouter } from "next/navigation";
+import { Button, Table } from "react-bootstrap";
+import CreateStudentModal from "./CreateStudentModal";
 import StudentType from "@/types/studentType";
+import EditStudentModal from "./EditStudentModal";
+import SchoolType from "@/types/schoolType";
+import { useUserStore } from "@/zuztand/userStore";
+import { useRouter } from "next/navigation";
+
 export default function StudentsPage() {
   const [students, setStudents] = useState<StudentType[] | undefined>(
     undefined
   );
+  const [allSchools, setAllSchools] = useState<SchoolType[] | undefined>(
+    undefined
+  );
   const [showCreateStudentModal, setShowCreateStudentModal] = useState(false);
-  const [studentFullName, setStudentFullName] = useState("");
-  const [studentFormOfStudy, setStudentFormOfStudy] = useState("");
-  const [studentLocationOfLiving, setStudentLocationOfLiving] = useState("");
-  const [studentSpecialCategory, setStudentSpecialCategory] = useState("");
-  const [studentSex, setStudentSex] = useState("");
+  const [showEditStudentModal, setShowEditStudentModal] = useState(false);
+  const [currentStudent, setCurrentStudent] = useState<StudentType | null>(
+    null
+  );
+  const getError = useUserStore((state) => state.error);
+  const setError = useUserStore((state) => state.setError);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-
   useEffect(() => {
+    const user = useUserStore.getState().user;
+
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    console.log("user", user);
+    if (!user.schoolId) {
+      setError("You don't have a school. Please contact your administrator.");
+    } else {
+      console.log("ASDASD");
+      setError("");
+    }
     const fetchStudents = async () => {
       const students = await getAllStudents();
       setStudents(students);
     };
+    const fetchSchools = async () => {
+      const schools = await getAllSchools();
+      setAllSchools(schools);
+    };
 
     fetchStudents();
+    fetchSchools();
   }, []);
+
+  axios.interceptors.response.use(
+    function (response) {
+      return response;
+    },
+    function (error) {
+      if (
+        error.response?.status === 401 &&
+        error.response.data.message === "Access token missing"
+      ) {
+        useUserStore.getState().logoutUser();
+        router.push("/login");
+        return;
+      }
+      return Promise.reject(error);
+    }
+  );
+
+  const getAllSchools = async (): Promise<SchoolType[] | undefined> => {
+    try {
+      const response = await axios.get("http://localhost:8030/api/schools", {
+        withCredentials: true,
+      });
+      setIsLoading(false);
+      return response.data;
+    } catch (error) {
+      console.log("Error fetching schools:", error);
+      return undefined;
+    }
+  };
 
   const getAllStudents = async (): Promise<StudentType[] | undefined> => {
     try {
       const response = await axios.get("http://localhost:8030/api/students", {
         withCredentials: true,
       });
+      setIsLoading(false);
+      setError("");
       return response.data;
     } catch (error) {
+      setError("There's no students in your school.");
       console.log("Error fetching students:", error);
       return undefined;
     }
   };
 
-  const createNewStudent = async () => {
+  const handleStudentCreated = () => {
+    getAllStudents().then((students) => setStudents(students));
+  };
+
+  const handleEditClick = (student: StudentType) => {
+    setCurrentStudent(student);
+    setShowEditStudentModal(true);
+  };
+
+  const handleDeleteClick = async (studentId: string) => {
     try {
-      const response = await axios.post(
-        "http://localhost:8030/api/students",
-        {
-          fullName: studentFullName,
-          formOfStudy: studentFormOfStudy,
-          locationOfLiving: studentLocationOfLiving,
-          specialCategory: studentSpecialCategory,
-          sex: studentSex,
-        },
-        { withCredentials: true }
+      await axios.delete(`http://localhost:8030/api/students/`, {
+        params: { ids: [studentId] },
+        withCredentials: true,
+      });
+      setStudents((prevStudents) =>
+        prevStudents?.filter((student) => student.id !== studentId)
       );
-      console.log("New student created:", response.data);
-      setShowCreateStudentModal(false);
-      // After creation, re-fetch the students to update the list
-      const students = await getAllStudents();
-      setStudents(students);
     } catch (error) {
-      console.log("Error creating student:", error);
+      console.log("Error deleting student:", error);
     }
   };
+
+  if (isLoading) {
+    return <div>Loading students...</div>;
+  }
 
   return (
     <main>
       <h1>All Students</h1>
 
-      {/* Button to open modal for creating a new student */}
       <Button variant="primary" onClick={() => setShowCreateStudentModal(true)}>
         Create new student
       </Button>
 
       <div className="mt-3">
-        {/* Students List */}
         <Table striped bordered hover responsive>
           <thead>
             <tr>
@@ -79,6 +141,8 @@ export default function StudentsPage() {
               <th>Location of Living</th>
               <th>Special Category</th>
               <th>Sex</th>
+              <th>School</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -89,86 +153,51 @@ export default function StudentsPage() {
                 <td>{student.locationOfLiving}</td>
                 <td>{student.specialCategory}</td>
                 <td>{student.sex}</td>
+                <td>{student.school?.name}</td>
+                <td>
+                  <Button
+                    variant="warning"
+                    onClick={() => handleEditClick(student)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="danger"
+                    className="ms-2"
+                    onClick={() => handleDeleteClick(student.id)}
+                  >
+                    Delete
+                  </Button>
+                </td>
               </tr>
             ))}
           </tbody>
         </Table>
+        <strong
+          style={{ color: "red", display: "flex", justifyContent: "center" }}
+        >
+          {getError}
+        </strong>
       </div>
 
-      {/* Modal for Create Student */}
-      <Modal
+      <CreateStudentModal
         show={showCreateStudentModal}
-        onHide={() => setShowCreateStudentModal(false)}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Create new student</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3" controlId="createStudentFullName">
-              <Form.Label>Full Name</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter full name"
-                onChange={(e) => setStudentFullName(e.target.value)}
-              />
-            </Form.Group>
+        onClose={() => setShowCreateStudentModal(false)}
+        onStudentCreated={handleStudentCreated}
+        allSchools={allSchools}
+      />
 
-            <Form.Group className="mb-3" controlId="createStudentFormOfStudy">
-              <Form.Label>Form of Study</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter form of study"
-                onChange={(e) => setStudentFormOfStudy(e.target.value)}
-              />
-            </Form.Group>
-
-            <Form.Group
-              className="mb-3"
-              controlId="createStudentLocationOfLiving"
-            >
-              <Form.Label>Location of Living</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter location of living"
-                onChange={(e) => setStudentLocationOfLiving(e.target.value)}
-              />
-            </Form.Group>
-
-            <Form.Group
-              className="mb-3"
-              controlId="createStudentSpecialCategory"
-            >
-              <Form.Label>Special Category</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter special category"
-                onChange={(e) => setStudentSpecialCategory(e.target.value)}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3" controlId="createStudentSex">
-              <Form.Label>Sex</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter sex"
-                onChange={(e) => setStudentSex(e.target.value)}
-              />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={() => setShowCreateStudentModal(false)}
-          >
-            Close
-          </Button>
-          <Button variant="primary" onClick={createNewStudent}>
-            Save Student
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      {currentStudent && (
+        <EditStudentModal
+          show={showEditStudentModal}
+          onClose={() => setShowEditStudentModal(false)}
+          student={currentStudent}
+          onStudentUpdated={() =>
+            getAllStudents().then((students) => setStudents(students))
+          }
+          allSchools={allSchools}
+        />
+      )}
     </main>
   );
 }

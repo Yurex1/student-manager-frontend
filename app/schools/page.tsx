@@ -22,9 +22,39 @@ export default function Home() {
   const [schoolName, setSchoolName] = useState<string>("");
   const [schoolType, setSchoolType] = useState<string>("");
   const [currentSchool, setCurrentSchool] = useState<string | null>(null);
+  const error = useUserStore((state) => state.error);
+  const setError = useUserStore((state) => state.setError);
   const router = useRouter();
+  const user = useUserStore((state) => state.user);
+  axios.interceptors.response.use(
+    function (response) {
+      return response;
+    },
+    function (error) {
+      if (
+        error.response?.status === 401 &&
+        error.response.data.message === "Access token missing"
+      ) {
+        useUserStore.getState().logoutUser();
+        router.push("/login");
+        return;
+      }
+      return Promise.reject(error);
+    }
+  );
 
   useEffect(() => {
+    const user = useUserStore.getState().user;
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    console.log("user", user.schoolId);
+    if (!user.schoolId) {
+      setError("You don't have a school. Please contact your administrator.");
+    } else {
+      setError("");
+    }
     const fetchSchools = async () => {
       const schools = await getAllSchools();
       setAllSchools(schools);
@@ -38,7 +68,6 @@ export default function Home() {
       return response;
     },
     function (error) {
-      console.log("Error response:", error.response?.data.message);
       if (
         error.response?.status === 401 &&
         error.response.data.message === "Access token missing"
@@ -74,7 +103,7 @@ export default function Home() {
         },
         { withCredentials: true }
       );
-      console.log("New school created:", response.data);
+      alert("School created successfully");
       setCreateSchoolModal(false);
       const schools = await getAllSchools();
       setAllSchools(schools);
@@ -100,20 +129,31 @@ export default function Home() {
     }
   };
 
+  if (error) {
+    return (
+      <strong
+        style={{ color: "red", display: "flex", justifyContent: "center" }}
+      >
+        {error}
+      </strong>
+    );
+  }
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>Loading schools...</div>;
   }
 
   return (
     <main>
-      <Button
-        variant="primary"
-        onClick={() => {
-          setCreateSchoolModal(true);
-        }}
-      >
-        Create new school
-      </Button>
+      {user?.isAdmin && (
+        <Button
+          variant="primary"
+          onClick={() => {
+            setCreateSchoolModal(true);
+          }}
+        >
+          Create new school
+        </Button>
+      )}
 
       <div className="mt-3">
         <h2>Schools</h2>

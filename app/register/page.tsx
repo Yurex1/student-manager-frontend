@@ -1,9 +1,10 @@
 "use client";
 
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { useRouter } from "next/navigation";
+import { useUserStore } from "@/zuztand/userStore";
 
 export default function Home() {
   const [login, setLogin] = useState("");
@@ -11,6 +12,13 @@ export default function Home() {
   const [fullName, setFullName] = useState("");
   const [localError, setLocalError] = useState("");
   const router = useRouter();
+  const user = useUserStore((state) => state.user);
+
+  useEffect(() => {
+    if (user) {
+      router.push("/");
+    }
+  }, [user, router]);
 
   const registerUser = async (e: React.FormEvent) => {
     e.preventDefault();

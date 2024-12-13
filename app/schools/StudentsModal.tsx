@@ -1,4 +1,3 @@
-// components/StudentsModal.tsx
 import { Button, Table, Modal } from "react-bootstrap";
 import StudentType from "@/types/studentType";
 
@@ -16,7 +15,11 @@ export const StudentsModal = ({
   currentSchool,
 }: StudentsModalProps) => {
   return (
-    <Modal show={showStudentsModal} onHide={() => setShowStudentsModal(false)}>
+    <Modal
+      size="lg"
+      show={showStudentsModal}
+      onHide={() => setShowStudentsModal(false)}
+    >
       <Modal.Header closeButton>
         <Modal.Title>Students in School ({currentSchool})</Modal.Title>
       </Modal.Header>

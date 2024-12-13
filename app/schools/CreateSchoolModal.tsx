@@ -1,4 +1,3 @@
-// components/CreateSchoolModal.tsx
 import { Button, Form, Modal } from "react-bootstrap";
 
 interface CreateSchoolModalProps {

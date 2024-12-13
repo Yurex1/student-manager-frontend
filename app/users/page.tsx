@@ -5,7 +5,8 @@ import { Button, Table, Modal, Form } from "react-bootstrap";
 import UserType from "@/types/userType";
 import { useUserStore } from "@/zuztand/userStore";
 import { useRouter } from "next/navigation";
-
+import EditUserModal from "./EditUserModal";
+import EditUserModalNotAdmin from "./EditUserModalNotAdmin";
 const UsersPage = () => {
   const currentUser = useUserStore.getState().user;
   const [users, setUsers] = useState<UserType[]>([]);
@@ -15,8 +16,13 @@ const UsersPage = () => {
   const [editingUser, setEditingUser] = useState<UserType | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
-
+  const error = useUserStore((state) => state.error);
+  const setError = useUserStore((state) => state.setError);
   useEffect(() => {
+    if (!currentUser) {
+      router.push("/login");
+      return;
+    }
     fetchUsers();
     fetchSchools();
     setIsAdmin(currentUser?.isAdmin || false);
@@ -27,7 +33,6 @@ const UsersPage = () => {
       return response;
     },
     function (error) {
-      console.log("Error response:", error.response.data.message);
       if (
         error.response?.status === 401 &&
         error.response.data.message === "Access token missing"
@@ -68,12 +73,35 @@ const UsersPage = () => {
     setShowModal(true);
   };
 
+  const handleSaveMe = async () => {
+    if (!editingUser) return;
+    console.log("HERE");
+    try {
+      await axios.put(
+        `http://localhost:8030/api/users/updateMe`,
+        {
+          login: editingUser.login,
+          name: editingUser.name,
+          password: editingUser.password,
+        },
+        { withCredentials: true }
+      );
+      alert("User updated successfully!");
+      setShowModal(false);
+      fetchUsers();
+    } catch (error: any) {
+      setError(error.response.data.message);
+      throw new Error(error.response.data.message);
+      console.error("Error updating user:", error);
+    }
+  };
+
   const handleSave = async () => {
     if (!editingUser) return;
 
     try {
       await axios.put(
-        `http://localhost:8030/api/users/${editingUser.id}`,
+        `http://localhost:8030/api/users/updateUser/${editingUser.id}`,
         {
           isAdmin: editingUser.isAdmin,
           schoolId: editingUser.school?.id,
@@ -136,16 +164,22 @@ const UsersPage = () => {
               <td>{user.name}</td>
               <td>{user.login}</td>
               <td>{user.isAdmin ? "Yes" : "No"}</td>
-              <td>{user.school?.name || "null"}</td>
+              <td>{user.school?.name || "No school"}</td>
               <td>
-                <Button
-                  variant="primary"
-                  onClick={() => handleEdit(user)}
-                  disabled={!isAdmin}
-                >
-                  Edit
-                </Button>{" "}
-                {currentUser?.id !== user.id && (
+                {currentUser?.id === user.id ? (
+                  <Button variant="primary" onClick={() => handleEdit(user)}>
+                    Edit
+                  </Button>
+                ) : (
+                  <Button
+                    variant="primary"
+                    onClick={() => handleEdit(user)}
+                    disabled={!isAdmin}
+                  >
+                    Edit
+                  </Button>
+                )}
+                {currentUser?.isAdmin && currentUser?.id !== user.id && (
                   <Button
                     variant="danger"
                     onClick={() => handleDelete(user.id)}
@@ -158,61 +192,24 @@ const UsersPage = () => {
           ))}
         </tbody>
       </Table>
-
-      <Modal show={showModal} onHide={handleModalClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>Edit User</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {editingUser && (
-            <Form>
-              <Form.Group controlId="formIsAdmin">
-                <Form.Label>Is Admin</Form.Label>
-                <Form.Check
-                  type="checkbox"
-                  checked={editingUser.isAdmin}
-                  onChange={(e) => {
-                    setEditingUser({
-                      ...editingUser,
-                      isAdmin: e.target.checked,
-                    });
-                  }}
-                />
-              </Form.Group>
-              <Form.Group controlId="formSchool">
-                <Form.Label>School</Form.Label>
-                <Form.Control
-                  as="select"
-                  value={editingUser.school?.id || ""}
-                  onChange={(e) => {
-                    setEditingUser({
-                      ...editingUser,
-                      school: schools.find(
-                        (school) => school.id === e.target.value
-                      ),
-                    });
-                  }}
-                >
-                  <option value="">Select School</option>
-                  {schools.map((school) => (
-                    <option key={school.id} value={school.id}>
-                      {school.name}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-            </Form>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleModalClose}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={handleSave}>
-            Save Changes
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      {currentUser?.isAdmin ? (
+        <EditUserModal
+          showModal={showModal}
+          handleModalClose={handleModalClose}
+          editingUser={editingUser}
+          setEditingUser={setEditingUser}
+          schools={schools}
+          handleSave={handleSave}
+        />
+      ) : (
+        <EditUserModalNotAdmin
+          showModal={showModal}
+          handleModalClose={handleModalClose}
+          editingUser={editingUser}
+          setEditingUser={setEditingUser}
+          handleSave={handleSaveMe}
+        />
+      )}
     </div>
   );
 };

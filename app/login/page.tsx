@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useUserStore } from "../../zuztand/userStore";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -10,9 +10,17 @@ const LoginPage = () => {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
-
+  const user = useUserStore((state) => state.user);
   const setUser = useUserStore((state) => state.setUser);
   const error = useUserStore((state) => state.error);
+  const setError = useUserStore((state) => state.setError);
+
+  useEffect(() => {
+    if (user) {
+      router.push("/");
+    }
+    setError("");
+  }, [user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +37,6 @@ const LoginPage = () => {
         }
       );
 
-      console.log(data.accessToken);
       const userResponse = await axios.get(
         "http://localhost:8030/api/users/me",
         {
@@ -39,9 +46,11 @@ const LoginPage = () => {
 
       setUser(userResponse.data);
 
-      router.push("/getMe");
-      //   eslint-disable-next-line @typescript-eslint/no-explicit-any
+      router.push("/");
     } catch (err: any) {
+      console.log(err);
+      setError(err.response.data.message);
+      console.log(error);
       console.error(err);
     }
   };
