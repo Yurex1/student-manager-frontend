@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useUserStore } from "@/zuztand/userStore";
 import { useRouter } from "next/navigation";
-import { Button, Table, Form, Modal, Spinner } from "react-bootstrap";
+import { Button, Table, Spinner } from "react-bootstrap";
 import { CreateSchoolModal } from "./CreateSchoolModal";
 import { StudentsModal } from "./StudentsModal";
 import SchoolType from "@/types/schoolType";
@@ -95,7 +95,7 @@ export default function Home() {
 
   const createNewSchool = async () => {
     try {
-      const response = await axios.post(
+      await axios.post(
         `${API_URL}/api/schools`,
         {
           name: schoolName,

@@ -1,12 +1,12 @@
+import UserType from "@/types/userType";
 import { useUserStore } from "@/zuztand/userStore";
-import { useState } from "react";
 import { Modal, Form, Button, Alert } from "react-bootstrap";
 
 interface EditUserModalProps {
   showModal: boolean;
   handleModalClose: () => void;
-  editingUser: any;
-  setEditingUser: (user: any) => void;
+  editingUser: UserType;
+  setEditingUser: (user: UserType) => void;
   handleSave: () => Promise<void>;
 }
 
@@ -29,6 +29,7 @@ const EditUserModalNotAdmin: React.FC<EditUserModalProps> = ({
     try {
       await handleSave();
       setError("");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.log(err);
       setError(err.message || "An error occurred. Please try again.");

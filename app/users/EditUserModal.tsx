@@ -1,11 +1,13 @@
+import SchoolType from "@/types/schoolType";
+import UserType from "@/types/userType";
 import { Modal, Form, Button } from "react-bootstrap";
 
 interface EditUserModalProps {
   showModal: boolean;
   handleModalClose: () => void;
-  editingUser: any;
-  setEditingUser: (user: any) => void;
-  schools: any[];
+  editingUser: UserType;
+  setEditingUser: (user: UserType) => void;
+  schools: SchoolType[];
   handleSave: () => void;
 }
 
@@ -46,6 +48,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                 onChange={(e) => {
                   setEditingUser({
                     ...editingUser,
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    //@ts-expect-error
                     school: schools.find(
                       (school) => school.id === e.target.value
                     ),

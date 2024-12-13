@@ -26,7 +26,7 @@ const LoginPage = () => {
     e.preventDefault();
 
     try {
-      const { data } = await axios.post(
+      await axios.post(
         `${API_URL}/api/auth/login`,
         {
           login,
@@ -44,6 +44,7 @@ const LoginPage = () => {
       setUser(userResponse.data);
 
       router.push("/");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.log(err);
       setError(err.response.data.message);

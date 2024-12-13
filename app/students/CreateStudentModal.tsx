@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import axios from "axios";
 import SchoolType from "@/types/schoolType";
@@ -24,7 +24,6 @@ const CreateStudentModal: React.FC<CreateStudentModalProps> = ({
   const [studentSex, setStudentSex] = useState("");
   const [studentSchool, setStudentSchool] = useState<string>("");
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
-  const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
 

@@ -1,23 +1,23 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Table, Modal, Form, Spinner } from "react-bootstrap";
+import { Button, Table, Spinner } from "react-bootstrap";
 import UserType from "@/types/userType";
 import { useUserStore } from "@/zuztand/userStore";
 import { useRouter } from "next/navigation";
 import EditUserModal from "./EditUserModal";
 import EditUserModalNotAdmin from "./EditUserModalNotAdmin";
 import { API_URL } from "@/app/config/API_URL";
+import SchoolType from "@/types/schoolType";
 const UsersPage = () => {
   const currentUser = useUserStore.getState().user;
   const [users, setUsers] = useState<UserType[]>([]);
-  const [schools, setSchools] = useState<any[]>([]);
+  const [schools, setSchools] = useState<SchoolType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<UserType | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
-  const error = useUserStore((state) => state.error);
   const setError = useUserStore((state) => state.setError);
   useEffect(() => {
     if (!currentUser) {
@@ -90,6 +90,7 @@ const UsersPage = () => {
       alert("User updated successfully!");
       setShowModal(false);
       fetchUsers();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setError(error.response.data.message);
       throw new Error(error.response.data.message);

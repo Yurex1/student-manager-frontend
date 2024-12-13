@@ -1,6 +1,6 @@
 "use client";
 import { useUserStore } from "../../zuztand/userStore";
-import { Navbar, Nav, Container, Button, Dropdown } from "react-bootstrap";
+import { Navbar, Nav, Container, Dropdown } from "react-bootstrap";
 
 export default function AppNavbar() {
   const user = useUserStore((state) => state.user);

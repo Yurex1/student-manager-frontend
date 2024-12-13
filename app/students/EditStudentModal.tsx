@@ -44,11 +44,13 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
     });
   }, [student]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleInputChange = (e: any) => {
     const { name, value } = e.target;
     setFormValues({ ...formValues, [name]: value });
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDateChange = (e: any) => {
     console.log("a");
     const selectedDate = new Date(e.target.value);
