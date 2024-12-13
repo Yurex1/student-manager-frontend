@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Table, Modal, Form } from "react-bootstrap";
+import { Button, Table, Modal, Form, Spinner } from "react-bootstrap";
 import UserType from "@/types/userType";
 import { useUserStore } from "@/zuztand/userStore";
 import { useRouter } from "next/navigation";
@@ -141,11 +141,25 @@ const UsersPage = () => {
   };
 
   if (isLoading) {
-    return <p>Loading users...</p>;
+    return (
+      <div
+        style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}
+      >
+        <Spinner animation="border" variant="primary" />
+        <span className="ms-2">Loading...</span>
+      </div>
+    );
   }
 
   return (
-    <div>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
       <h1>Users</h1>
       <Table striped bordered hover responsive>
         <thead>
@@ -159,7 +173,10 @@ const UsersPage = () => {
           </tr>
         </thead>
         <tbody>
-          {users.map((user: UserType) => (
+          {[
+            currentUser!,
+            ...users.filter((user) => user.id !== currentUser?.id),
+          ].map((user: UserType) => (
             <tr key={user.id}>
               <td>{user.id}</td>
               <td>{user.name}</td>

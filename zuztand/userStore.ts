@@ -2,22 +2,14 @@ import { API_URL } from "@/app/config/API_URL";
 import axios from "axios";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-interface User {
-  id: string;
-  login: string;
-  name: string;
-  isAdmin: boolean;
-  school: object;
-  schoolId: string;
-}
+import UserType from "@/types/userType";
 
 interface UserState {
-  user: User | null;
+  user: UserType | null;
   loading: boolean;
   error: string | null;
-  setUser: (user: User | null) => void;
-  updateUser: (updatedUser: Partial<User>) => void;
+  setUser: (user: UserType | null) => void;
+  updateUser: (updatedUser: Partial<UserType>) => void;
   logoutUser: () => void;
   setError: (error: string) => void;
 }
@@ -43,7 +35,6 @@ export const useUserStore = create<UserState>()(
         );
         set({ user: null });
         set({ error: null });
-        console.log("User logged out");
         window.location.href = "/login";
       },
       setError: (error) => set({ error }),

@@ -4,6 +4,7 @@ import axios from "axios";
 import StudentType from "@/types/studentType";
 import SchoolType from "@/types/schoolType";
 import { API_URL } from "@/app/config/API_URL";
+
 interface EditStudentModalProps {
   show: boolean;
   onClose: () => void;
@@ -19,29 +20,75 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
   onStudentUpdated,
   allSchools,
 }) => {
-  const [fullName, setFullName] = useState(student.fullName);
-  const [formOfStudy, setFormOfStudy] = useState(student.formOfStudy);
-  const [locationOfLiving, setLocationOfLiving] = useState(
-    student.locationOfLiving
-  );
-  const [specialCategory, setSpecialCategory] = useState(
-    student.specialCategory
-  );
-  const [sex, setSex] = useState(student.sex);
-  const [school, setSchool] = useState(student.school.id);
-  const [dateOfBirth, setDateOfBirth] = useState(student.dateOfBirth);
+  const [formValues, setFormValues] = useState({
+    fullName: student.fullName || "",
+    formOfStudy: student.formOfStudy || "",
+    locationOfLiving: student.locationOfLiving || "",
+    specialCategory: student.specialCategory || "",
+    sex: student.sex || "",
+    schoolId: student.school.id || "",
+    dateOfBirth: student.dateOfBirth || "",
+  });
+
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    setFullName(student.fullName);
-    setFormOfStudy(student.formOfStudy);
-    setLocationOfLiving(student.locationOfLiving);
-    setSpecialCategory(student.specialCategory);
-    setSex(student.sex);
-    setSchool(student.school.id);
-    setDateOfBirth(student.dateOfBirth);
+    setFormValues({
+      fullName: student.fullName,
+      formOfStudy: student.formOfStudy,
+      locationOfLiving: student.locationOfLiving,
+      specialCategory: student.specialCategory,
+      sex: student.sex,
+      schoolId: student.school.id,
+      dateOfBirth: student.dateOfBirth,
+    });
   }, [student]);
 
+  const handleInputChange = (e: any) => {
+    const { name, value } = e.target;
+    setFormValues({ ...formValues, [name]: value });
+  };
+
+  const handleDateChange = (e: any) => {
+    console.log("a");
+    const selectedDate = new Date(e.target.value);
+    const today = new Date();
+    console.log(today, selectedDate);
+    if (selectedDate >= today) {
+      setErrorMessage("Date of birth cannot be today or in the future.");
+    } else {
+      setErrorMessage("");
+    }
+    setFormValues({ ...formValues, dateOfBirth: new Date(e.target.value) });
+  };
+
   const handleSaveChanges = async () => {
+    const {
+      fullName,
+      formOfStudy,
+      locationOfLiving,
+      specialCategory,
+      sex,
+      schoolId,
+      dateOfBirth,
+    } = formValues;
+
+    if (
+      !fullName ||
+      !formOfStudy ||
+      !locationOfLiving ||
+      !specialCategory ||
+      !sex ||
+      !dateOfBirth ||
+      !schoolId
+    ) {
+      setErrorMessage("Please fill in all fields.");
+      return;
+    }
+    if (errorMessage) {
+      return;
+    }
+
     try {
       await axios.put(
         `${API_URL}/api/students/${student.id}`,
@@ -52,14 +99,15 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
           specialCategory,
           sex,
           dateOfBirth,
-          schoolId: school,
+          schoolId,
         },
         { withCredentials: true }
       );
       onStudentUpdated();
       onClose();
     } catch (error) {
-      console.log("Error updating student:", error);
+      console.error("Error updating student:", error);
+      setErrorMessage("Failed to update student. Please try again later.");
     }
   };
 
@@ -69,53 +117,64 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
         <Modal.Title>Edit Student</Modal.Title>
       </Modal.Header>
       <Modal.Body>
+        {errorMessage && (
+          <div style={{ color: "red", marginBottom: "10px" }}>
+            {errorMessage}
+          </div>
+        )}
         <Form>
           <Form.Group controlId="editStudentFullName" className="mb-3">
             <Form.Label>Full Name</Form.Label>
             <Form.Control
               type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              name="fullName"
+              value={formValues.fullName}
+              onChange={handleInputChange}
             />
           </Form.Group>
           <Form.Group controlId="editStudentFormOfStudy" className="mb-3">
             <Form.Label>Form of Study</Form.Label>
             <Form.Control
               type="text"
-              value={formOfStudy}
-              onChange={(e) => setFormOfStudy(e.target.value)}
+              name="formOfStudy"
+              value={formValues.formOfStudy}
+              onChange={handleInputChange}
             />
           </Form.Group>
           <Form.Group controlId="editStudentLocationOfLiving" className="mb-3">
             <Form.Label>Location of Living</Form.Label>
             <Form.Control
               type="text"
-              value={locationOfLiving}
-              onChange={(e) => setLocationOfLiving(e.target.value)}
+              name="locationOfLiving"
+              value={formValues.locationOfLiving}
+              onChange={handleInputChange}
             />
           </Form.Group>
           <Form.Group controlId="editStudentSpecialCategory" className="mb-3">
             <Form.Label>Special Category</Form.Label>
             <Form.Control
               type="text"
-              value={specialCategory}
-              onChange={(e) => setSpecialCategory(e.target.value)}
+              name="specialCategory"
+              value={formValues.specialCategory}
+              onChange={handleInputChange}
             />
           </Form.Group>
           <Form.Group controlId="editStudentSex" className="mb-3">
             <Form.Label>Sex</Form.Label>
             <Form.Control
               type="text"
-              value={sex}
-              onChange={(e) => setSex(e.target.value)}
+              name="sex"
+              value={formValues.sex}
+              onChange={handleInputChange}
             />
           </Form.Group>
           <Form.Group controlId="editStudentSchool" className="mb-3">
             <Form.Label>School</Form.Label>
             <Form.Control
               as="select"
-              value={school}
-              onChange={(e) => setSchool(e.target.value)}
+              name="schoolId"
+              value={formValues.schoolId}
+              onChange={handleInputChange}
             >
               <option value="">Select a school</option>
               {allSchools?.map((schoolItem) => (
@@ -129,13 +188,19 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
             <Form.Label>Date of Birth</Form.Label>
             <Form.Control
               type="date"
+              name="dateOfBirth"
               value={
-                dateOfBirth
-                  ? new Date(dateOfBirth).toISOString().split("T")[0]
+                formValues.dateOfBirth
+                  ? new Date(formValues.dateOfBirth).toISOString().split("T")[0]
                   : ""
               }
-              onChange={(e) => setDateOfBirth(new Date(e.target.value))}
+              onChange={handleDateChange}
             />
+            {errorMessage && (
+              <div style={{ color: "red", fontSize: "0.9rem" }}>
+                Date of birth cannot be today or in the future
+              </div>
+            )}
           </Form.Group>
         </Form>
       </Modal.Body>

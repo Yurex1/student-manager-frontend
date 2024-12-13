@@ -40,11 +40,15 @@ const CreateStudentModal: React.FC<CreateStudentModalProps> = ({
       !dateOfBirth ||
       !studentSchool
     ) {
-      setErrorMessage("Please fill in all fields.");
+      return;
+    }
+    console.log("dateOfBirth", dateOfBirth, new Date());
+    if (dateOfBirth > new Date()) {
+      setErrorMessage("Date of birth cannot be in the future.");
       return;
     }
     try {
-      const response = await axios.post(
+      await axios.post(
         `${API_URL}/api/students`,
         {
           fullName: studentFullName,
@@ -75,12 +79,6 @@ const CreateStudentModal: React.FC<CreateStudentModalProps> = ({
       </Modal.Header>
       <Modal.Body>
         <Form>
-          {errorMessage && (
-            <div style={{ color: "red", marginBottom: "10px" }}>
-              {errorMessage}
-            </div>
-          )}
-
           <Form.Group className="mb-3" controlId="createStudentFullName">
             <Form.Label>Full Name</Form.Label>
             <Form.Control
@@ -150,13 +148,20 @@ const CreateStudentModal: React.FC<CreateStudentModalProps> = ({
               type="date"
               placeholder="Enter date of birth"
               value={dateOfBirth ? dateOfBirth.toISOString().split("T")[0] : ""}
-              onChange={(e) => setDateOfBirth(new Date(e.target.value))}
+              onChange={(e) => {
+                setDateOfBirth(new Date(e.target.value));
+              }}
             />
-            {getErrorText(dateOfBirth) && (
+            {(errorMessage && (
               <div style={{ color: "red", fontSize: "0.9rem" }}>
-                {getErrorText(dateOfBirth)}
+                Date of birth cannot be today or in the future
               </div>
-            )}
+            )) ||
+              (getErrorText(dateOfBirth) && (
+                <div style={{ color: "red", fontSize: "0.9rem" }}>
+                  {getErrorText(dateOfBirth)}
+                </div>
+              ))}
           </Form.Group>
 
           <Form.Group className="mb-3" controlId="createStudentSex">

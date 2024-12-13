@@ -1,30 +1,28 @@
 "use client";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Table } from "react-bootstrap";
+import { Button, Table, Spinner } from "react-bootstrap";
 import CreateStudentModal from "./CreateStudentModal";
-import StudentType from "@/types/studentType";
 import EditStudentModal from "./EditStudentModal";
+import StudentType from "@/types/studentType";
 import SchoolType from "@/types/schoolType";
 import { useUserStore } from "@/zuztand/userStore";
 import { useRouter } from "next/navigation";
 import { API_URL } from "@/app/config/API_URL";
+
 export default function StudentsPage() {
-  const [students, setStudents] = useState<StudentType[] | undefined>(
-    undefined
-  );
-  const [allSchools, setAllSchools] = useState<SchoolType[] | undefined>(
-    undefined
-  );
+  const [students, setStudents] = useState<StudentType[] | undefined>();
+  const [allSchools, setAllSchools] = useState<SchoolType[] | undefined>();
   const [showCreateStudentModal, setShowCreateStudentModal] = useState(false);
   const [showEditStudentModal, setShowEditStudentModal] = useState(false);
   const [currentStudent, setCurrentStudent] = useState<StudentType | null>(
     null
   );
+  const [isLoading, setIsLoading] = useState(true);
   const getError = useUserStore((state) => state.error);
   const setError = useUserStore((state) => state.setError);
-  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+
   useEffect(() => {
     const user = useUserStore.getState().user;
 
@@ -32,74 +30,46 @@ export default function StudentsPage() {
       router.push("/login");
       return;
     }
-    console.log("user", user);
+
     if (!user.schoolId) {
       setError("You don't have a school. Please contact your administrator.");
     } else {
-      console.log("ASDASD");
       setError("");
     }
-    const fetchStudents = async () => {
-      const students = await getAllStudents();
-      setStudents(students);
-    };
-    const fetchSchools = async () => {
-      const schools = await getAllSchools();
-      setAllSchools(schools);
-    };
 
-    fetchStudents();
-    fetchSchools();
-  }, []);
+    const fetchData = async () => {
+      try {
+        const [studentsResponse, schoolsResponse] = await Promise.all([
+          axios.get(`${API_URL}/api/students`, { withCredentials: true }),
+          axios.get(`${API_URL}/api/schools`, { withCredentials: true }),
+        ]);
 
-  axios.interceptors.response.use(
-    function (response) {
-      return response;
-    },
-    function (error) {
-      if (
-        error.response?.status === 401 &&
-        error.response.data.message === "Access token missing"
-      ) {
-        useUserStore.getState().logoutUser();
-        router.push("/login");
-        return;
+        setStudents(studentsResponse.data);
+        setAllSchools(schoolsResponse.data);
+      } catch (error) {
+        setError("Failed to load data. Please try again.");
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
       }
-      return Promise.reject(error);
-    }
-  );
+    };
 
-  const getAllSchools = async (): Promise<SchoolType[] | undefined> => {
-    try {
-      const response = await axios.get(`${API_URL}/api/schools`, {
-        withCredentials: true,
-      });
-      setIsLoading(false);
-      return response.data;
-    } catch (error) {
-      console.log("Error fetching schools:", error);
-      return undefined;
-    }
-  };
+    fetchData();
 
-  const getAllStudents = async (): Promise<StudentType[] | undefined> => {
-    try {
-      const response = await axios.get(`${API_URL}/api/students`, {
-        withCredentials: true,
-      });
-      setIsLoading(false);
-      setError("");
-      return response.data;
-    } catch (error) {
-      setError("There's no students in your school.");
-      console.log("Error fetching students:", error);
-      return undefined;
-    }
-  };
-
-  const handleStudentCreated = () => {
-    getAllStudents().then((students) => setStudents(students));
-  };
+    axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (
+          error.response?.status === 401 &&
+          error.response.data.message === "Access token missing"
+        ) {
+          useUserStore.getState().logoutUser();
+          router.push("/login");
+        }
+        return Promise.reject(error);
+      }
+    );
+  }, [router, setError]);
 
   const handleEditClick = (student: StudentType) => {
     setCurrentStudent(student);
@@ -116,16 +86,30 @@ export default function StudentsPage() {
         prevStudents?.filter((student) => student.id !== studentId)
       );
     } catch (error) {
-      console.log("Error deleting student:", error);
+      console.error("Error deleting student:", error);
     }
   };
 
   if (isLoading) {
-    return <div>Loading students...</div>;
+    return (
+      <div
+        style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}
+      >
+        <Spinner animation="border" variant="primary" />
+        <span className="ms-2">Loading...</span>
+      </div>
+    );
   }
 
   return (
-    <main>
+    <main
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
       <h1>All Students</h1>
 
       <Button variant="primary" onClick={() => setShowCreateStudentModal(true)}>
@@ -183,7 +167,11 @@ export default function StudentsPage() {
       <CreateStudentModal
         show={showCreateStudentModal}
         onClose={() => setShowCreateStudentModal(false)}
-        onStudentCreated={handleStudentCreated}
+        onStudentCreated={() =>
+          axios
+            .get(`${API_URL}/api/students`, { withCredentials: true })
+            .then((response) => setStudents(response.data))
+        }
         allSchools={allSchools}
       />
 
@@ -193,7 +181,9 @@ export default function StudentsPage() {
           onClose={() => setShowEditStudentModal(false)}
           student={currentStudent}
           onStudentUpdated={() =>
-            getAllStudents().then((students) => setStudents(students))
+            axios
+              .get(`${API_URL}/api/students`, { withCredentials: true })
+              .then((response) => setStudents(response.data))
           }
           allSchools={allSchools}
         />

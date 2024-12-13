@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useUserStore } from "@/zuztand/userStore";
 import { useRouter } from "next/navigation";
-import { Button, Table, Form, Modal } from "react-bootstrap";
+import { Button, Table, Form, Modal, Spinner } from "react-bootstrap";
 import { CreateSchoolModal } from "./CreateSchoolModal";
 import { StudentsModal } from "./StudentsModal";
 import SchoolType from "@/types/schoolType";
@@ -139,11 +139,25 @@ export default function Home() {
     );
   }
   if (isLoading) {
-    return <div>Loading schools...</div>;
+    return (
+      <div
+        style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}
+      >
+        <Spinner animation="border" variant="primary" />
+        <span className="ms-2">Loading...</span>
+      </div>
+    );
   }
 
   return (
-    <main>
+    <main
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
       {user?.isAdmin && (
         <Button
           variant="primary"
@@ -155,7 +169,14 @@ export default function Home() {
         </Button>
       )}
 
-      <div className="mt-3">
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexDirection: "column",
+        }}
+      >
         <h2>Schools</h2>
         <Table striped bordered hover responsive>
           <thead>
@@ -172,7 +193,7 @@ export default function Home() {
                 <td>{school.type}</td>
                 <td>
                   <Button
-                    variant="info"
+                    variant="secondary"
                     onClick={() => handleShowStudents(school.id)}
                   >
                     View Students

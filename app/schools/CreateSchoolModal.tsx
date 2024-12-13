@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 
 interface CreateSchoolModalProps {
@@ -19,6 +20,31 @@ export const CreateSchoolModal = ({
   setSchoolType,
   createNewSchool,
 }: CreateSchoolModalProps) => {
+  const [nameError, setNameError] = useState("");
+  const [typeError, setTypeError] = useState("");
+
+  const handleSaveSchool = () => {
+    let isValid = true;
+
+    if (!schoolName.trim()) {
+      setNameError("School name cannot be empty.");
+      isValid = false;
+    } else {
+      setNameError("");
+    }
+
+    if (!schoolType.trim()) {
+      setTypeError("School type cannot be empty.");
+      isValid = false;
+    } else {
+      setTypeError("");
+    }
+
+    if (isValid) {
+      createNewSchool();
+    }
+  };
+
   return (
     <Modal
       show={showCreateSchoolModal}
@@ -32,19 +58,31 @@ export const CreateSchoolModal = ({
           <Form.Group className="mb-3" controlId="createSchoolName">
             <Form.Label>School name</Form.Label>
             <Form.Control
-              onChange={(e) => setSchoolName(e.target.value)}
               type="text"
+              value={schoolName}
               placeholder="Enter school name"
+              onChange={(e) => setSchoolName(e.target.value)}
             />
+            {nameError && (
+              <div style={{ fontSize: "0.9rem", color: "red" }}>
+                {nameError}
+              </div>
+            )}
           </Form.Group>
 
           <Form.Group className="mb-3" controlId="createSchoolType">
             <Form.Label>School type</Form.Label>
             <Form.Control
-              onChange={(e) => setSchoolType(e.target.value)}
               type="text"
+              value={schoolType}
               placeholder="Enter school type"
+              onChange={(e) => setSchoolType(e.target.value)}
             />
+            {typeError && (
+              <div style={{ fontSize: "0.9rem", color: "red" }}>
+                {typeError}
+              </div>
+            )}
           </Form.Group>
         </Form>
       </Modal.Body>
@@ -52,7 +90,7 @@ export const CreateSchoolModal = ({
         <Button variant="secondary" onClick={() => setCreateSchoolModal(false)}>
           Close
         </Button>
-        <Button variant="primary" onClick={createNewSchool}>
+        <Button variant="primary" onClick={handleSaveSchool}>
           Save School
         </Button>
       </Modal.Footer>

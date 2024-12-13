@@ -25,7 +25,11 @@ export default function AppNavbar() {
           {user ? (
             <Nav>
               <Dropdown>
-                <Dropdown.Toggle variant="dark" id="dropdown-basic">
+                <Dropdown.Toggle
+                  style={{ padding: 0 }}
+                  variant="dark"
+                  id="dropdown-basic"
+                >
                   Welcome, <strong>{user.name}</strong>!
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
