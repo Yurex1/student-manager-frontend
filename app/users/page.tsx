@@ -15,7 +15,7 @@ const UsersPage = () => {
   const [schools, setSchools] = useState<SchoolType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [editingUser, setEditingUser] = useState<UserType | null>(null);
+  const [editingUser, setEditingUser] = useState<UserType>();
   const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
   const setError = useUserStore((state) => state.setError);
@@ -215,7 +215,7 @@ const UsersPage = () => {
         <EditUserModal
           showModal={showModal}
           handleModalClose={handleModalClose}
-          editingUser={editingUser}
+          editingUser={editingUser!}
           setEditingUser={setEditingUser}
           schools={schools}
           handleSave={handleSave}
@@ -224,7 +224,7 @@ const UsersPage = () => {
         <EditUserModalNotAdmin
           showModal={showModal}
           handleModalClose={handleModalClose}
-          editingUser={editingUser}
+          editingUser={editingUser!}
           setEditingUser={setEditingUser}
           handleSave={handleSaveMe}
         />
