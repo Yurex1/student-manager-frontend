@@ -7,6 +7,7 @@ import { useUserStore } from "@/zuztand/userStore";
 import { useRouter } from "next/navigation";
 import EditUserModal from "./EditUserModal";
 import EditUserModalNotAdmin from "./EditUserModalNotAdmin";
+import { API_URL } from "@/app/config/API_URL";
 const UsersPage = () => {
   const currentUser = useUserStore.getState().user;
   const [users, setUsers] = useState<UserType[]>([]);
@@ -47,7 +48,7 @@ const UsersPage = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:8030/api/users", {
+      const response = await axios.get("${API_URL}/api/users", {
         withCredentials: true,
       });
       setUsers(response.data);
@@ -59,7 +60,7 @@ const UsersPage = () => {
 
   const fetchSchools = async () => {
     try {
-      const response = await axios.get("http://localhost:8030/api/schools", {
+      const response = await axios.get("${API_URL}/api/schools", {
         withCredentials: true,
       });
       setSchools(response.data);
@@ -78,7 +79,7 @@ const UsersPage = () => {
     console.log("HERE");
     try {
       await axios.put(
-        `http://localhost:8030/api/users/updateMe`,
+        `${API_URL}/api/users/updateMe`,
         {
           login: editingUser.login,
           name: editingUser.name,
@@ -101,7 +102,7 @@ const UsersPage = () => {
 
     try {
       await axios.put(
-        `http://localhost:8030/api/users/updateUser/${editingUser.id}`,
+        `${API_URL}/api/users/updateUser/${editingUser.id}`,
         {
           isAdmin: editingUser.isAdmin,
           schoolId: editingUser.school?.id,
@@ -124,7 +125,7 @@ const UsersPage = () => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
 
     try {
-      await axios.delete("http://localhost:8030/api/users", {
+      await axios.delete("${API_URL}/api/users", {
         data: { ids: [id] },
         withCredentials: true,
       });

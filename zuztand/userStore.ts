@@ -34,7 +34,7 @@ export const useUserStore = create<UserState>()(
         })),
       logoutUser: () => {
         axios.post(
-          "http://localhost:8030/api/auth/logout",
+          "${API_URL}/api/auth/logout",
           {},
           {
             withCredentials: true,

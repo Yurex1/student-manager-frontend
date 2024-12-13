@@ -44,7 +44,7 @@ const CreateStudentModal: React.FC<CreateStudentModalProps> = ({
     }
     try {
       const response = await axios.post(
-        "http://localhost:8030/api/students",
+        "${API_URL}/api/students",
         {
           fullName: studentFullName,
           formOfStudy: studentFormOfStudy,

@@ -8,7 +8,7 @@ import EditStudentModal from "./EditStudentModal";
 import SchoolType from "@/types/schoolType";
 import { useUserStore } from "@/zuztand/userStore";
 import { useRouter } from "next/navigation";
-
+import { API_URL } from "@/app/config/API_URL";
 export default function StudentsPage() {
   const [students, setStudents] = useState<StudentType[] | undefined>(
     undefined
@@ -71,7 +71,7 @@ export default function StudentsPage() {
 
   const getAllSchools = async (): Promise<SchoolType[] | undefined> => {
     try {
-      const response = await axios.get("http://localhost:8030/api/schools", {
+      const response = await axios.get("${API_URL}/api/schools", {
         withCredentials: true,
       });
       setIsLoading(false);
@@ -84,7 +84,7 @@ export default function StudentsPage() {
 
   const getAllStudents = async (): Promise<StudentType[] | undefined> => {
     try {
-      const response = await axios.get("http://localhost:8030/api/students", {
+      const response = await axios.get("${API_URL}/api/students", {
         withCredentials: true,
       });
       setIsLoading(false);
@@ -108,7 +108,7 @@ export default function StudentsPage() {
 
   const handleDeleteClick = async (studentId: string) => {
     try {
-      await axios.delete(`http://localhost:8030/api/students/`, {
+      await axios.delete(`${API_URL}/api/students/`, {
         params: { ids: [studentId] },
         withCredentials: true,
       });

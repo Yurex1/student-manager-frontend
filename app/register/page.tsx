@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/zuztand/userStore";
+import { API_URL } from "../config/API_URL";
 
 export default function Home() {
   const [login, setLogin] = useState("");
@@ -24,13 +25,12 @@ export default function Home() {
     e.preventDefault();
 
     try {
-      await axios.post("http://localhost:8030/api/auth/register", {
+      await axios.post(`${API_URL}/api/auth/register`, {
         login,
         password,
         name: fullName,
       });
       router.push("/login");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setLocalError(
         "Error occurred: " + error.response.data.message.toString()

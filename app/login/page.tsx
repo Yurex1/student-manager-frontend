@@ -5,7 +5,7 @@ import { useUserStore } from "../../zuztand/userStore";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Form, Button, Container, Alert } from "react-bootstrap";
-
+import { API_URL } from "@/app/config/API_URL";
 const LoginPage = () => {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
@@ -27,7 +27,7 @@ const LoginPage = () => {
 
     try {
       const { data } = await axios.post(
-        "http://localhost:8030/api/auth/login",
+        `${API_URL}/api/auth/login`,
         {
           login,
           password,
@@ -37,12 +37,9 @@ const LoginPage = () => {
         }
       );
 
-      const userResponse = await axios.get(
-        "http://localhost:8030/api/users/me",
-        {
-          withCredentials: true,
-        }
-      );
+      const userResponse = await axios.get(`${API_URL}/api/users/me`, {
+        withCredentials: true,
+      });
 
       setUser(userResponse.data);
 

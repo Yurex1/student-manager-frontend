@@ -8,7 +8,7 @@ import { CreateSchoolModal } from "./CreateSchoolModal";
 import { StudentsModal } from "./StudentsModal";
 import SchoolType from "@/types/schoolType";
 import StudentType from "@/types/studentType";
-
+import { API_URL } from "@/app/config/API_URL";
 export default function Home() {
   const [allSchools, setAllSchools] = useState<SchoolType[] | undefined>(
     undefined
@@ -82,7 +82,7 @@ export default function Home() {
 
   const getAllSchools = async (): Promise<SchoolType[] | undefined> => {
     try {
-      const response = await axios.get("http://localhost:8030/api/schools", {
+      const response = await axios.get("${API_URL}/api/schools", {
         withCredentials: true,
       });
       setIsLoading(false);
@@ -96,7 +96,7 @@ export default function Home() {
   const createNewSchool = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:8030/api/schools",
+        "${API_URL}/api/schools",
         {
           name: schoolName,
           type: schoolType,
@@ -115,7 +115,7 @@ export default function Home() {
   const handleShowStudents = async (schoolId: string) => {
     try {
       const response = await axios.get(
-        `http://localhost:8030/api/schools/getAllStudents/${schoolId}`,
+        `${API_URL}/api/schools/getAllStudents/${schoolId}`,
         { withCredentials: true }
       );
       const currentSchool = allSchools?.find(

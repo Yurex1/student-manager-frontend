@@ -3,7 +3,7 @@ import { Modal, Button, Form } from "react-bootstrap";
 import axios from "axios";
 import StudentType from "@/types/studentType";
 import SchoolType from "@/types/schoolType";
-
+import { API_URL } from "@/app/config/API_URL";
 interface EditStudentModalProps {
   show: boolean;
   onClose: () => void;
@@ -44,7 +44,7 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
   const handleSaveChanges = async () => {
     try {
       await axios.put(
-        `http://localhost:8030/api/students/${student.id}`,
+        `${API_URL}/api/students/${student.id}`,
         {
           fullName,
           formOfStudy,
