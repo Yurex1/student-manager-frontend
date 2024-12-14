@@ -3,6 +3,7 @@ import UserType from "@/types/userType";
 import { Modal, Form, Button } from "react-bootstrap";
 
 interface EditUserModalProps {
+  currentUser: UserType;
   showModal: boolean;
   handleModalClose: () => void;
   editingUser: UserType;
@@ -12,6 +13,7 @@ interface EditUserModalProps {
 }
 
 const EditUserModal: React.FC<EditUserModalProps> = ({
+  currentUser,
   showModal,
   handleModalClose,
   editingUser,
@@ -27,19 +29,22 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       <Modal.Body>
         {editingUser && (
           <Form>
-            <Form.Group controlId="formIsAdmin">
-              <Form.Label>Is Admin</Form.Label>
-              <Form.Check
-                type="checkbox"
-                checked={editingUser.isAdmin}
-                onChange={(e) => {
-                  setEditingUser({
-                    ...editingUser,
-                    isAdmin: e.target.checked,
-                  });
-                }}
-              />
-            </Form.Group>
+            {editingUser.id !== currentUser.id && (
+              <Form.Group controlId="formIsAdmin">
+                <Form.Label>Is Admin</Form.Label>
+                <Form.Check
+                  type="checkbox"
+                  checked={editingUser.isAdmin}
+                  onChange={(e) => {
+                    setEditingUser({
+                      ...editingUser,
+                      isAdmin: e.target.checked,
+                    });
+                  }}
+                />
+              </Form.Group>
+            )}
+
             <Form.Group controlId="formSchool">
               <Form.Label>School</Form.Label>
               <Form.Control

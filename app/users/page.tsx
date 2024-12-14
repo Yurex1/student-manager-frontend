@@ -94,7 +94,7 @@ const UsersPage = () => {
     } catch (error: any) {
       setError(error.response.data.message);
       throw new Error(error.response.data.message);
-      console.error("Error updating user:", error);
+      // console.error("Error updating user:", error);
     }
   };
 
@@ -214,6 +214,7 @@ const UsersPage = () => {
       </Table>
       {currentUser?.isAdmin ? (
         <EditUserModal
+          currentUser={currentUser}
           showModal={showModal}
           handleModalClose={handleModalClose}
           editingUser={editingUser!}
