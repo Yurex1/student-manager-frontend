@@ -76,7 +76,6 @@ const UsersPage = () => {
 
   const handleSaveMe = async () => {
     if (!editingUser) return;
-    console.log("HERE");
     try {
       await axios.put(
         `${API_URL}/api/users/updateMe`,
@@ -161,7 +160,7 @@ const UsersPage = () => {
         alignItems: "center",
       }}
     >
-      <h1>Users</h1>
+      <h1>All users</h1>
       <Table striped bordered hover responsive>
         <thead>
           <tr>

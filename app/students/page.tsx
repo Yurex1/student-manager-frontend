@@ -110,7 +110,7 @@ export default function StudentsPage() {
         alignItems: "center",
       }}
     >
-      <h1>All Students</h1>
+      <h1>All students</h1>
 
       <Button variant="primary" onClick={() => setShowCreateStudentModal(true)}>
         Create new student

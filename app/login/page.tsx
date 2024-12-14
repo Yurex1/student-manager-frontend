@@ -46,9 +46,7 @@ const LoginPage = () => {
       router.push("/");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      console.log(err);
       setError(err.response.data.message);
-      console.log(error);
       console.error(err);
     }
   };

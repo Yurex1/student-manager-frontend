@@ -41,7 +41,6 @@ const CreateStudentModal: React.FC<CreateStudentModalProps> = ({
     ) {
       return;
     }
-    console.log("dateOfBirth", dateOfBirth, new Date());
     if (dateOfBirth > new Date()) {
       setErrorMessage("Date of birth cannot be in the future.");
       return;

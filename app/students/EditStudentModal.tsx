@@ -52,10 +52,8 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDateChange = (e: any) => {
-    console.log("a");
     const selectedDate = new Date(e.target.value);
     const today = new Date();
-    console.log(today, selectedDate);
     if (selectedDate >= today) {
       setErrorMessage("Date of birth cannot be today or in the future.");
     } else {

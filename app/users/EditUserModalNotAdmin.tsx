@@ -31,7 +31,6 @@ const EditUserModalNotAdmin: React.FC<EditUserModalProps> = ({
       setError("");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      console.log(err);
       setError(err.message || "An error occurred. Please try again.");
     }
   };

@@ -49,7 +49,6 @@ export default function Home() {
       router.push("/login");
       return;
     }
-    console.log("user", user.schoolId);
     if (!user.schoolId) {
       setError("You don't have a school. Please contact your administrator.");
     } else {
@@ -129,6 +128,22 @@ export default function Home() {
     }
   };
 
+  const deleteSchool = async (schoolId: string) => {
+    console.log("schoolId", schoolId);
+    try {
+      await axios.delete(`${API_URL}/api/schools`, {
+        params: { ids: [schoolId] },
+        withCredentials: true,
+      });
+      alert("School deleted successfully");
+      const schools = await getAllSchools();
+      setAllSchools(schools);
+    } catch (error) {
+      alert("Failed to delete school. Please try again later.");
+      console.log("Error deleting school:", error);
+    }
+  };
+
   if (error) {
     return (
       <strong
@@ -158,6 +173,7 @@ export default function Home() {
         alignItems: "center",
       }}
     >
+      <h1>All schools</h1>
       {user?.isAdmin && (
         <Button
           variant="primary"
@@ -171,13 +187,13 @@ export default function Home() {
 
       <div
         style={{
+          marginTop: "10px",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
           flexDirection: "column",
         }}
       >
-        <h2>Schools</h2>
         <Table striped bordered hover responsive>
           <thead>
             <tr>
@@ -197,6 +213,13 @@ export default function Home() {
                     onClick={() => handleShowStudents(school.id)}
                   >
                     View Students
+                  </Button>
+                  <Button
+                    variant="danger"
+                    className="ms-2"
+                    onClick={() => deleteSchool(school.id)}
+                  >
+                    Delete school
                   </Button>
                 </td>
               </tr>
