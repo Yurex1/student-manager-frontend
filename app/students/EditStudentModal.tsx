@@ -103,9 +103,11 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
         },
         { withCredentials: true }
       );
+      alert("Student updated successfully");
       onStudentUpdated();
       onClose();
     } catch (error) {
+      alert("Error updating student");
       console.error("Error updating student:", error);
       setErrorMessage("Failed to update student. Please try again later.");
     }

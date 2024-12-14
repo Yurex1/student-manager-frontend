@@ -36,6 +36,7 @@ export default function Home() {
       setLocalError(
         "Error occurred: " + error.response.data.message.toString()
       );
+
       console.log("A", error.response.data.message.toString());
     }
   };

@@ -82,10 +82,12 @@ export default function StudentsPage() {
         params: { ids: [studentId] },
         withCredentials: true,
       });
+      alert("Student deleted successfully");
       setStudents((prevStudents) =>
         prevStudents?.filter((student) => student.id !== studentId)
       );
     } catch (error) {
+      alert("Error deleting student");
       console.error("Error deleting student:", error);
     }
   };

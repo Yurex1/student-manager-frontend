@@ -59,9 +59,11 @@ const CreateStudentModal: React.FC<CreateStudentModalProps> = ({
         },
         { withCredentials: true }
       );
+      alert("Student created successfully");
       onStudentCreated();
       onClose();
     } catch (error) {
+      alert("Error creating student");
       console.log("Error creating student:", error);
     }
   };

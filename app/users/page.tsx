@@ -91,6 +91,7 @@ const UsersPage = () => {
       fetchUsers();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
+      alert("Error updating user");
       setError(error.response.data.message);
       throw new Error(error.response.data.message);
       // console.error("Error updating user:", error);
@@ -113,6 +114,7 @@ const UsersPage = () => {
       setShowModal(false);
       fetchUsers();
     } catch (error) {
+      alert("Error updating user");
       console.error("Error updating user:", error);
     }
   };
@@ -132,6 +134,7 @@ const UsersPage = () => {
       alert("User deleted successfully!");
       fetchUsers();
     } catch (error) {
+      alert("Error deleting user");
       console.error("Error deleting user:", error);
     }
   };

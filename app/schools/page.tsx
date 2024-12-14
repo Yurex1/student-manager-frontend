@@ -107,6 +107,7 @@ export default function Home() {
       const schools = await getAllSchools();
       setAllSchools(schools);
     } catch (error) {
+      alert("Error creating school");
       console.log("Error creating school:", error);
     }
   };
