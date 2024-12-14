@@ -200,6 +200,7 @@ const UsersPage = () => {
                 )}
                 {currentUser?.isAdmin && currentUser?.id !== user.id && (
                   <Button
+                    className="ms-2"
                     variant="danger"
                     onClick={() => handleDelete(user.id)}
                   >
