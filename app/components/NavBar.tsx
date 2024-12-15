@@ -1,5 +1,6 @@
 "use client";
 import { useUserStore } from "../../zuztand/userStore";
+import Link from "next/link";
 import { Navbar, Nav, Container, Dropdown } from "react-bootstrap";
 
 export default function AppNavbar() {
@@ -14,9 +15,15 @@ export default function AppNavbar() {
           <Nav className="me-auto">
             {user ? (
               <>
-                <Nav.Link href="/users">Users</Nav.Link>
-                <Nav.Link href="/schools">Schools</Nav.Link>
-                <Nav.Link href="/students">Students</Nav.Link>
+                <Nav.Link as={Link} href="/users">
+                  Users
+                </Nav.Link>
+                <Nav.Link as={Link} href="/schools">
+                  Schools
+                </Nav.Link>
+                <Nav.Link as={Link} href="/students">
+                  Students
+                </Nav.Link>
               </>
             ) : (
               <></>
@@ -45,8 +52,12 @@ export default function AppNavbar() {
             </Nav>
           ) : (
             <Nav>
-              <Nav.Link href="/login">Login</Nav.Link>
-              <Nav.Link href="/register">Register </Nav.Link>
+              <Nav.Link as={Link} href="/login">
+                Login
+              </Nav.Link>
+              <Nav.Link as={Link} href="/register">
+                Register{" "}
+              </Nav.Link>
             </Nav>
           )}
         </Navbar.Collapse>
