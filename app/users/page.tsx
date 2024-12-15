@@ -85,6 +85,7 @@ const UsersPage = () => {
       ? `${API_URL}/api/users/updateMe`
       : `${API_URL}/api/users/updateUser/${editingUser.id}`;
 
+    console.log("editing", editingUser);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const payload: any = isCurrentUser
       ? {
@@ -93,9 +94,9 @@ const UsersPage = () => {
         }
       : {
           isAdmin: editingUser.isAdmin,
-          schoolId: editingUser.school?.id,
+          schoolId: editingUser.schoolId,
         };
-
+    console.log("payload", payload);
     if (updatePassword) {
       console.log("updatePassword", updatePassword);
       payload.password = updatePassword;

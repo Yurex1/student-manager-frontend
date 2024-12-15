@@ -5,7 +5,7 @@ export default interface UserType {
   login: string;
   name: string;
   isAdmin: boolean;
-  school: SchoolType;
-  schoolId: string;
+  school: SchoolType | null;
+  schoolId: string | null;
   password: string;
 }

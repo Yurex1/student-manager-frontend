@@ -9,9 +9,10 @@ import SchoolType from "@/types/schoolType";
 import { useUserStore } from "@/zuztand/userStore";
 import { useRouter } from "next/navigation";
 import { API_URL } from "@/app/config/API_URL";
+import UserType from "@/types/userType";
 
 export default function StudentsPage() {
-  const currentUser = useUserStore.getState().user;
+  const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [students, setStudents] = useState<StudentType[]>([]);
   const [allSchools, setAllSchools] = useState<SchoolType[] | undefined>();
   const [showCreateStudentModal, setShowCreateStudentModal] = useState(false);
@@ -20,63 +21,74 @@ export default function StudentsPage() {
     null
   );
   const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | undefined>(
-    undefined
-  );
-  const getError = useUserStore((state) => state.error);
-  const setError = useUserStore((state) => state.setError);
+  const [error, setError] = useState<string | undefined>(undefined);
   const router = useRouter();
 
   useEffect(() => {
+    setError("");
     const user = useUserStore.getState().user;
-
+    setCurrentUser(user);
     if (!user) {
       router.push("/login");
       return;
     }
 
-    if (!user.schoolId) {
+    if (!user.schoolId && !user.isAdmin) {
       setError("You don't have a school. Please contact your administrator.");
     } else {
       setError("");
     }
 
-    const fetchData = async () => {
-      try {
-        const schoolsResponse = await axios.get(`${API_URL}/api/schools`, {
-          withCredentials: true,
-        });
+    // Fetch schools and students data directly inside useEffect
+    axios
+      .get(`${API_URL}/api/schools`, { withCredentials: true })
+      .then((schoolsResponse) => {
         setAllSchools(schoolsResponse.data);
-
-        const studentsResponse = await axios.get(`${API_URL}/api/students`, {
-          withCredentials: true,
-        });
+        return axios.get(`${API_URL}/api/students`, { withCredentials: true });
+      })
+      .then((studentsResponse) => {
         setStudents(studentsResponse.data);
 
         if (studentsResponse.data.length === 0) {
-          setErrorMessage("There are no users for your school.");
+          if (user.isAdmin) {
+            setError("No students exist.");
+          } else {
+            setError("There are no students for your school.");
+          }
         } else {
-          setErrorMessage(undefined);
+          setError(""); // Clear the error when students are found
         }
-
-        setError("");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (error: any) {
+      })
+      .catch((error: any) => {
+        console.log("Error fetching students:", error);
         if (
           error.response.status === 404 &&
-          error.response.data.message.includes("No students found")
+          error.response.data.message === "No schools found"
         ) {
-          setErrorMessage("There are no users for your school.");
+          setError("There are no schools.");
+          return;
+        }
+
+        if (
+          error.response.status === 404 &&
+          error.response.data.message === "No students found" &&
+          user?.isAdmin
+        ) {
+          setError("There are no students at all.");
+        } else if (
+          error.response.status === 404 &&
+          error.response.data.message.includes("No students found") &&
+          !user?.isAdmin
+        ) {
+          setError("There are no students for your school.");
         } else {
           setError("Failed to load data. Please try again.");
         }
-      } finally {
+      })
+      .finally(() => {
         setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [router, setError]);
+      });
+  }, [router]);
 
   const handleEditClick = (student: StudentType) => {
     setCurrentStudent(student);
@@ -97,16 +109,19 @@ export default function StudentsPage() {
         prevStudents?.filter((student) => student.id !== studentId)
       );
       if (students?.length === 1) {
-        setErrorMessage("There are no users for your school.");
+        setError(
+          currentUser?.isAdmin
+            ? "No students exist."
+            : "There are no students for your school."
+        );
       }
     } catch (error) {
       alert("Error deleting student");
-      console.error("Error deleting student:", error);
+      console.log("Error deleting student:", error);
     }
   };
 
-  console.log(currentUser);
-  if (!currentUser?.schoolId) {
+  if (!currentUser?.isAdmin && !currentUser?.schoolId) {
     return (
       <main
         style={{
@@ -153,7 +168,7 @@ export default function StudentsPage() {
       </Button>
 
       <div className="mt-3">
-        {errorMessage ? (
+        {error && (
           <div>
             <strong
               style={{
@@ -162,10 +177,11 @@ export default function StudentsPage() {
                 justifyContent: "center",
               }}
             >
-              {errorMessage}
+              {error}
             </strong>
           </div>
-        ) : (
+        )}
+        {!error && (
           <Table striped bordered hover responsive>
             <thead>
               <tr>
@@ -207,11 +223,6 @@ export default function StudentsPage() {
             </tbody>
           </Table>
         )}
-        <strong
-          style={{ color: "red", display: "flex", justifyContent: "center" }}
-        >
-          {getError}
-        </strong>
       </div>
 
       <CreateStudentModal
@@ -219,7 +230,7 @@ export default function StudentsPage() {
         onClose={() => setShowCreateStudentModal(false)}
         onStudentCreated={(newStudent) => {
           setStudents((prevStudents) => [...prevStudents, newStudent]);
-          setErrorMessage(undefined);
+          setError(undefined); // Clear any error message
         }}
         allSchools={allSchools}
       />

@@ -1,95 +1,79 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useUserStore } from "@/zuztand/userStore";
 import { useRouter } from "next/navigation";
 import { Button, Table, Spinner } from "react-bootstrap";
-import { CreateSchoolModal } from "./CreateSchoolModal";
 import { StudentsModal } from "./StudentsModal";
 import SchoolType from "@/types/schoolType";
 import StudentType from "@/types/studentType";
 import { API_URL } from "@/app/config/API_URL";
+import dynamic from "next/dynamic";
+import { CreateSchoolModal } from "./CreateSchoolModal";
+
 export default function Home() {
-  const [allSchools, setAllSchools] = useState<SchoolType[] | undefined>(
-    undefined
-  );
+  const [allSchools, setAllSchools] = useState<SchoolType[] | undefined>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showStudentsModal, setShowStudentsModal] = useState(false);
-  const [showCreateSchoolModal, setCreateSchoolModal] = useState(false);
+  const [showCreateSchoolModal, setShowCreateSchoolModal] = useState(false);
   const [students, setStudents] = useState<StudentType[] | undefined>(
     undefined
   );
   const [schoolName, setSchoolName] = useState<string>("");
   const [schoolType, setSchoolType] = useState<string>("");
   const [currentSchool, setCurrentSchool] = useState<string | null>(null);
+
   const error = useUserStore((state) => state.error);
   const setError = useUserStore((state) => state.setError);
   const router = useRouter();
   const user = useUserStore((state) => state.user);
 
-  axios.interceptors.response.use(
-    function (response) {
-      return response;
-    },
-    function (error) {
-      if (
-        error.response?.status === 401 &&
-        error.response.data.message === "Access token missing"
-      ) {
-        useUserStore.getState().logoutUser();
-        router.push("/login");
-        return;
-      }
-      return Promise.reject(error);
-    }
-  );
-
   useEffect(() => {
-    setError("");
-    const user = useUserStore.getState().user;
-    if (!user) {
-      router.push("/login");
-      return;
-    }
-    if (!user.schoolId) {
-      setError("You don't have a school. Please contact your administrator.");
-    } else {
-      setError("");
-    }
-    const fetchSchools = async () => {
-      const schools = await getAllSchools();
-      setAllSchools(schools);
+    const initialize = async () => {
+      try {
+        setError("");
+        const user = useUserStore.getState().user;
+        if (!user) {
+          router.push("/login");
+          return;
+        }
+
+        if (!user.isAdmin && !user.schoolId) {
+          setError(
+            "You don't have a school. Please contact your administrator."
+          );
+          return;
+        }
+
+        const schools = await fetchSchools();
+        setAllSchools(schools);
+      } catch (err) {
+        console.log("Initialization error:", err);
+        setError("Failed to load data. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    fetchSchools();
-  }, []);
+    initialize();
+  }, [router]);
 
-  axios.interceptors.response.use(
-    function (response) {
-      return response;
-    },
-    function (error) {
-      if (
-        error.response?.status === 401 &&
-        error.response.data.message === "Access token missing"
-      ) {
-        useUserStore.getState().logoutUser();
-        router.push("/login");
-        return;
-      }
-      return Promise.reject(error);
-    }
-  );
-
-  const getAllSchools = async (): Promise<SchoolType[] | undefined> => {
+  const fetchSchools = async (): Promise<SchoolType[] | undefined> => {
     try {
       const response = await axios.get(`${API_URL}/api/schools`, {
         withCredentials: true,
       });
-      setIsLoading(false);
+
       return response.data;
-    } catch (error) {
-      console.log("Error fetching schools:", error);
+    } catch (err: any) {
+      console.log(err.response.data);
+      if (err.response.data.message === "No schools found") {
+        setError("There are no schools.");
+        return undefined;
+      }
+      console.log("Error fetching schools:", err);
+      setError("Unable to fetch schools. Please try again later.");
       return undefined;
     }
   };
@@ -98,27 +82,27 @@ export default function Home() {
     try {
       await axios.post(
         `${API_URL}/api/schools`,
-        {
-          name: schoolName,
-          type: schoolType,
-        },
+        { name: schoolName, type: schoolType },
         { withCredentials: true }
       );
+
       alert("School created successfully");
-      setCreateSchoolModal(false);
-      const schools = await getAllSchools();
+      setShowCreateSchoolModal(false);
+
+      const schools = await fetchSchools();
       setAllSchools(schools);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      console.log("Schools:", schools);
+      if (!schools?.length) {
+        setError("There are no schools.");
+      }
     } catch (error: any) {
-      if (
+      console.log("Error creating school:", error);
+      const message =
         error.response?.status === 400 &&
         error.response.data.message === "School with this name already exists"
-      ) {
-        alert("School with this name already exists");
-        return;
-      }
-      alert("Error creating school");
-      console.log("Error creating school:", error);
+          ? "School with this name already exists"
+          : "Error creating school. Please try again.";
+      alert(message);
     }
   };
 
@@ -131,27 +115,31 @@ export default function Home() {
       const currentSchool = allSchools?.find(
         (school) => school.id === schoolId
       );
+
       setStudents(response.data);
       setCurrentSchool(currentSchool?.name || null);
       setShowStudentsModal(true);
     } catch (error) {
       console.log("Error fetching students:", error);
+      setError("Unable to fetch students. Please try again later.");
     }
   };
 
   const deleteSchool = async (schoolId: string) => {
     if (!window.confirm("Are you sure you want to delete this school?")) return;
+
     try {
       await axios.delete(`${API_URL}/api/schools`, {
         params: { ids: [schoolId] },
         withCredentials: true,
       });
       alert("School deleted successfully");
-      const schools = await getAllSchools();
+
+      const schools = await fetchSchools();
       setAllSchools(schools);
     } catch (error) {
-      alert("Failed to delete school. Please try again later.");
       console.log("Error deleting school:", error);
+      alert("Failed to delete school. Please try again later.");
     }
   };
 
@@ -166,14 +154,22 @@ export default function Home() {
         }}
       >
         <h1>All schools</h1>
-        <strong
-          style={{ color: "red", display: "flex", justifyContent: "center" }}
-        >
-          You don&apos;t have a school. Please contact your administrator.
-        </strong>
+        {user?.isAdmin && (
+          <Button
+            variant="primary"
+            onClick={() => {
+              setError("");
+              setShowCreateSchoolModal(true);
+            }}
+          >
+            Create new school
+          </Button>
+        )}
+        <strong style={{ color: "red" }}>{error}</strong>
       </main>
     );
   }
+
   if (isLoading) {
     return (
       <div
@@ -198,62 +194,56 @@ export default function Home() {
       {user?.isAdmin && (
         <Button
           variant="primary"
-          onClick={() => {
-            setCreateSchoolModal(true);
-          }}
+          onClick={() => setShowCreateSchoolModal(true)}
         >
           Create new school
         </Button>
       )}
 
-      <div
-        style={{
-          marginTop: "10px",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          flexDirection: "column",
-        }}
-      >
-        <Table striped bordered hover responsive>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Type</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {allSchools?.map((school) => (
-              <tr key={school.id}>
-                <td>{school.name}</td>
-                <td>{school.type}</td>
-                <td>
-                  <Button
-                    variant="secondary"
-                    onClick={() => handleShowStudents(school.id)}
-                  >
-                    View Students
-                  </Button>
-                  {user?.isAdmin && (
-                    <Button
-                      variant="danger"
-                      className="ms-2"
-                      onClick={() => deleteSchool(school.id)}
-                    >
-                      Delete school
-                    </Button>
-                  )}
-                </td>
+      <div style={{ marginTop: "10px" }}>
+        {allSchools?.length ? (
+          <Table striped bordered hover responsive>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {allSchools.map((school) => (
+                <tr key={school.id}>
+                  <td>{school.name}</td>
+                  <td>{school.type}</td>
+                  <td>
+                    <Button
+                      variant="secondary"
+                      onClick={() => handleShowStudents(school.id)}
+                    >
+                      View Students
+                    </Button>
+                    {user?.isAdmin && (
+                      <Button
+                        variant="danger"
+                        className="ms-2"
+                        onClick={() => deleteSchool(school.id)}
+                      >
+                        Delete school
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        ) : (
+          <strong>No schools available.</strong>
+        )}
       </div>
 
       <CreateSchoolModal
         showCreateSchoolModal={showCreateSchoolModal}
-        setCreateSchoolModal={setCreateSchoolModal}
+        setCreateSchoolModal={setShowCreateSchoolModal}
         schoolName={schoolName}
         setSchoolName={setSchoolName}
         schoolType={schoolType}

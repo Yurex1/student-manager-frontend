@@ -1,6 +1,6 @@
 import SchoolType from "@/types/schoolType";
 import UserType from "@/types/userType";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Modal, Form, Button, Alert } from "react-bootstrap";
 
 interface EditUserModalProps {
@@ -73,17 +73,26 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                 as="select"
                 value={editingUser.school?.id || ""}
                 onChange={(e) => {
-                  setEditingUser({
-                    ...editingUser,
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    //@ts-expect-error
-                    school: schools.find(
-                      (school) => school.id === e.target.value
-                    ),
-                  });
+                  const selectedSchoolId = e.target.value;
+                  if (selectedSchoolId === "") {
+                    setEditingUser({
+                      ...editingUser,
+                      schoolId: null,
+                      school: null,
+                    });
+                  } else {
+                    const selectedSchool = schools.find(
+                      (school) => school.id === selectedSchoolId
+                    );
+                    setEditingUser({
+                      ...editingUser,
+                      school: selectedSchool || null,
+                      schoolId: selectedSchoolId,
+                    });
+                  }
                 }}
               >
-                <option value="">Select School</option>
+                <option value="">No school</option>
                 {schools.map((school) => (
                   <option key={school.id} value={school.id}>
                     {school.name}
@@ -91,6 +100,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                 ))}
               </Form.Control>
             </Form.Group>
+
             {currentUser.id === editingUser.id && (
               <>
                 <Form.Group controlId="formNewPassword" className="mt-3">
