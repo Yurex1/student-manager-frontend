@@ -39,13 +39,16 @@ export default function StudentsPage() {
 
     const fetchData = async () => {
       try {
-        const [studentsResponse, schoolsResponse] = await Promise.all([
-          axios.get(`${API_URL}/api/students`, { withCredentials: true }),
-          axios.get(`${API_URL}/api/schools`, { withCredentials: true }),
-        ]);
+        const schoolsResponse = await axios.get(`${API_URL}/api/schools`, {
+          withCredentials: true,
+        });
+        setAllSchools(schoolsResponse.data);
+        const studentsResponse = await axios.get(`${API_URL}/api/students`, {
+          withCredentials: true,
+        });
 
         setStudents(studentsResponse.data);
-        setAllSchools(schoolsResponse.data);
+
         setError("");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
@@ -64,21 +67,21 @@ export default function StudentsPage() {
     };
 
     fetchData();
-
-    axios.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        if (
-          error.response?.status === 401 &&
-          error.response.data.message === "Access token missing"
-        ) {
-          useUserStore.getState().logoutUser();
-          router.push("/login");
-        }
-        return Promise.reject(error);
-      }
-    );
   }, [router, setError]);
+
+  axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (
+        error.response?.status === 401 &&
+        error.response.data.message === "Access token missing"
+      ) {
+        useUserStore.getState().logoutUser();
+        router.push("/login");
+      }
+      return Promise.reject(error);
+    }
+  );
 
   const handleEditClick = (student: StudentType) => {
     setCurrentStudent(student);
@@ -95,6 +98,10 @@ export default function StudentsPage() {
       setStudents((prevStudents) =>
         prevStudents?.filter((student) => student.id !== studentId)
       );
+      console.log(students);
+      if (students?.length === 1) {
+        setError("No students found");
+      }
     } catch (error) {
       alert("Error deleting student");
       console.error("Error deleting student:", error);
@@ -181,7 +188,10 @@ export default function StudentsPage() {
         onStudentCreated={() =>
           axios
             .get(`${API_URL}/api/students`, { withCredentials: true })
-            .then((response) => setStudents(response.data))
+            .then((response) => {
+              setStudents(response.data);
+              setError("");
+            })
         }
         allSchools={allSchools}
       />
