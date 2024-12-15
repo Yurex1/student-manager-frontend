@@ -1,6 +1,6 @@
 import SchoolType from "@/types/schoolType";
 import UserType from "@/types/userType";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Modal, Form, Button, Alert } from "react-bootstrap";
 
 interface EditUserModalProps {

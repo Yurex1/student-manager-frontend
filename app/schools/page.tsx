@@ -9,7 +9,6 @@ import { StudentsModal } from "./StudentsModal";
 import SchoolType from "@/types/schoolType";
 import StudentType from "@/types/studentType";
 import { API_URL } from "@/app/config/API_URL";
-import dynamic from "next/dynamic";
 import { CreateSchoolModal } from "./CreateSchoolModal";
 
 export default function Home() {
@@ -66,6 +65,7 @@ export default function Home() {
       });
 
       return response.data;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.log(err.response.data);
       if (err.response.data.message === "No schools found") {
@@ -95,6 +95,7 @@ export default function Home() {
       if (!schools?.length) {
         setError("There are no schools.");
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.log("Error creating school:", error);
       const message =

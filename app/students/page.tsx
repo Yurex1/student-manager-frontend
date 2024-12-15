@@ -59,7 +59,8 @@ export default function StudentsPage() {
           setError(""); // Clear the error when students are found
         }
       })
-      .catch((error: any) => {
+
+      .catch((error) => {
         console.log("Error fetching students:", error);
         if (
           error.response.status === 404 &&
