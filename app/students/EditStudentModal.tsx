@@ -108,7 +108,7 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
       onClose();
     } catch (error) {
       alert("Error updating student");
-      console.error("Error updating student:", error);
+      console.log("Error updating student:", error);
       setErrorMessage("Failed to update student. Please try again later.");
     }
   };

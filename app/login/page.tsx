@@ -47,7 +47,7 @@ const LoginPage = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.response.data.message);
-      console.error(err);
+      console.log(err);
     }
   };
 

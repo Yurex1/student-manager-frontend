@@ -11,7 +11,7 @@ export default function AppNavbar() {
       <Container>
         <Navbar.Brand href="/">Student Manager</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
+        <Navbar.Collapse>
           <Nav className="me-auto">
             {user ? (
               <>
@@ -32,11 +32,7 @@ export default function AppNavbar() {
           {user ? (
             <Nav>
               <Dropdown>
-                <Dropdown.Toggle
-                  style={{ padding: 0 }}
-                  variant="dark"
-                  id="dropdown-basic"
-                >
+                <Dropdown.Toggle style={{ padding: 0 }} variant="dark">
                   Welcome, <strong>{user.name}</strong>!
                 </Dropdown.Toggle>
                 <Dropdown.Menu>

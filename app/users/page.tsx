@@ -20,6 +20,7 @@ const UsersPage = () => {
   const router = useRouter();
   const setError = useUserStore((state) => state.setError);
   useEffect(() => {
+    setError("");
     if (!currentUser) {
       router.push("/login");
       return;
@@ -86,6 +87,7 @@ const UsersPage = () => {
         },
         { withCredentials: true }
       );
+      useUserStore.setState({ user: editingUser });
       alert("User updated successfully!");
       setShowModal(false);
       fetchUsers();
@@ -115,7 +117,7 @@ const UsersPage = () => {
       fetchUsers();
     } catch (error) {
       alert("Error updating user");
-      console.error("Error updating user:", error);
+      console.log("Error updating user:", error);
     }
   };
 
@@ -135,7 +137,7 @@ const UsersPage = () => {
       fetchUsers();
     } catch (error) {
       alert("Error deleting user");
-      console.error("Error deleting user:", error);
+      console.log("Error deleting user:", error);
     }
   };
 

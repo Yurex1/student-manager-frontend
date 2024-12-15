@@ -3,11 +3,13 @@ import { Modal, Button, Form } from "react-bootstrap";
 import axios from "axios";
 import SchoolType from "@/types/schoolType";
 import { API_URL } from "../config/API_URL";
+import StudentType from "@/types/studentType";
 
 interface CreateStudentModalProps {
   show: boolean;
   onClose: () => void;
-  onStudentCreated: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onStudentCreated: (newStudent: StudentType) => void;
   allSchools: SchoolType[] | undefined;
 }
 
@@ -46,7 +48,7 @@ const CreateStudentModal: React.FC<CreateStudentModalProps> = ({
       return;
     }
     try {
-      await axios.post(
+      const result = await axios.post(
         `${API_URL}/api/students`,
         {
           fullName: studentFullName,
@@ -60,7 +62,8 @@ const CreateStudentModal: React.FC<CreateStudentModalProps> = ({
         { withCredentials: true }
       );
       alert("Student created successfully");
-      onStudentCreated();
+      const student: StudentType = result.data;
+      onStudentCreated(student);
       onClose();
     } catch (error) {
       alert("Error creating student");

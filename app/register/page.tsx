@@ -33,9 +33,7 @@ export default function Home() {
       router.push("/login");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      setLocalError(
-        "Error occurred: " + error.response.data.message.toString()
-      );
+      setLocalError(error.response.data.message.toString());
 
       console.log("A", error.response.data.message.toString());
     }

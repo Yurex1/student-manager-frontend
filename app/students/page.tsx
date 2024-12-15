@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { API_URL } from "@/app/config/API_URL";
 
 export default function StudentsPage() {
-  const [students, setStudents] = useState<StudentType[] | undefined>();
+  const [students, setStudents] = useState<StudentType[]>([]);
   const [allSchools, setAllSchools] = useState<SchoolType[] | undefined>();
   const [showCreateStudentModal, setShowCreateStudentModal] = useState(false);
   const [showEditStudentModal, setShowEditStudentModal] = useState(false);
@@ -19,6 +19,9 @@ export default function StudentsPage() {
     null
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(
+    undefined
+  );
   const getError = useUserStore((state) => state.error);
   const setError = useUserStore((state) => state.setError);
   const router = useRouter();
@@ -49,18 +52,23 @@ export default function StudentsPage() {
 
         setStudents(studentsResponse.data);
 
+        if (studentsResponse.data.length === 0) {
+          setErrorMessage("There are no users for your school.");
+        } else {
+          setErrorMessage(undefined);
+        }
+
         setError("");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         if (
-          error.response?.status === 404 &&
-          error.response.data.message === "No students found"
+          error.response.status === 404 &&
+          error.response.data.message.includes("No students found")
         ) {
-          setError("No students found");
-          return;
+          setErrorMessage("There are no users for your school.");
+        } else {
+          setError("Failed to load data. Please try again.");
         }
-        setError("Failed to load data. Please try again.");
-        console.error("Error fetching data:", error);
       } finally {
         setIsLoading(false);
       }
@@ -69,26 +77,15 @@ export default function StudentsPage() {
     fetchData();
   }, [router, setError]);
 
-  axios.interceptors.response.use(
-    (response) => response,
-    (error) => {
-      if (
-        error.response?.status === 401 &&
-        error.response.data.message === "Access token missing"
-      ) {
-        useUserStore.getState().logoutUser();
-        router.push("/login");
-      }
-      return Promise.reject(error);
-    }
-  );
-
   const handleEditClick = (student: StudentType) => {
     setCurrentStudent(student);
     setShowEditStudentModal(true);
   };
 
   const handleDeleteClick = async (studentId: string) => {
+    if (!window.confirm("Are you sure you want to delete this student?")) {
+      return;
+    }
     try {
       await axios.delete(`${API_URL}/api/students/`, {
         params: { ids: [studentId] },
@@ -98,9 +95,8 @@ export default function StudentsPage() {
       setStudents((prevStudents) =>
         prevStudents?.filter((student) => student.id !== studentId)
       );
-      console.log(students);
       if (students?.length === 1) {
-        setError("No students found");
+        setErrorMessage("There are no users for your school.");
       }
     } catch (error) {
       alert("Error deleting student");
@@ -135,46 +131,60 @@ export default function StudentsPage() {
       </Button>
 
       <div className="mt-3">
-        <Table striped bordered hover responsive>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Form of Study</th>
-              <th>Location of Living</th>
-              <th>Special Category</th>
-              <th>Sex</th>
-              <th>School</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {students?.map((student) => (
-              <tr key={student.id}>
-                <td>{student.fullName}</td>
-                <td>{student.formOfStudy}</td>
-                <td>{student.locationOfLiving}</td>
-                <td>{student.specialCategory}</td>
-                <td>{student.sex}</td>
-                <td>{student.school?.name}</td>
-                <td>
-                  <Button
-                    variant="warning"
-                    onClick={() => handleEditClick(student)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="danger"
-                    className="ms-2"
-                    onClick={() => handleDeleteClick(student.id)}
-                  >
-                    Delete
-                  </Button>
-                </td>
+        {errorMessage ? (
+          <div>
+            <strong
+              style={{
+                color: "red",
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              {errorMessage}
+            </strong>
+          </div>
+        ) : (
+          <Table striped bordered hover responsive>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Form of Study</th>
+                <th>Location of Living</th>
+                <th>Special Category</th>
+                <th>Sex</th>
+                <th>School</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {students?.map((student) => (
+                <tr key={student.id}>
+                  <td>{student.fullName}</td>
+                  <td>{student.formOfStudy}</td>
+                  <td>{student.locationOfLiving}</td>
+                  <td>{student.specialCategory}</td>
+                  <td>{student.sex}</td>
+                  <td>{student.school?.name}</td>
+                  <td>
+                    <Button
+                      variant="warning"
+                      onClick={() => handleEditClick(student)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="danger"
+                      className="ms-2"
+                      onClick={() => handleDeleteClick(student.id)}
+                    >
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
         <strong
           style={{ color: "red", display: "flex", justifyContent: "center" }}
         >
@@ -185,14 +195,10 @@ export default function StudentsPage() {
       <CreateStudentModal
         show={showCreateStudentModal}
         onClose={() => setShowCreateStudentModal(false)}
-        onStudentCreated={() =>
-          axios
-            .get(`${API_URL}/api/students`, { withCredentials: true })
-            .then((response) => {
-              setStudents(response.data);
-              setError("");
-            })
-        }
+        onStudentCreated={(newStudent) => {
+          setStudents((prevStudents) => [...prevStudents, newStudent]);
+          setErrorMessage(undefined);
+        }}
         allSchools={allSchools}
       />
 

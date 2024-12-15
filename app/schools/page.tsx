@@ -26,6 +26,7 @@ export default function Home() {
   const setError = useUserStore((state) => state.setError);
   const router = useRouter();
   const user = useUserStore((state) => state.user);
+
   axios.interceptors.response.use(
     function (response) {
       return response;
@@ -44,6 +45,7 @@ export default function Home() {
   );
 
   useEffect(() => {
+    setError("");
     const user = useUserStore.getState().user;
     if (!user) {
       router.push("/login");
@@ -106,7 +108,15 @@ export default function Home() {
       setCreateSchoolModal(false);
       const schools = await getAllSchools();
       setAllSchools(schools);
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      if (
+        error.response?.status === 400 &&
+        error.response.data.message === "School with this name already exists"
+      ) {
+        alert("School with this name already exists");
+        return;
+      }
       alert("Error creating school");
       console.log("Error creating school:", error);
     }
@@ -130,7 +140,7 @@ export default function Home() {
   };
 
   const deleteSchool = async (schoolId: string) => {
-    console.log("schoolId", schoolId);
+    if (!window.confirm("Are you sure you want to delete this school?")) return;
     try {
       await axios.delete(`${API_URL}/api/schools`, {
         params: { ids: [schoolId] },
@@ -147,11 +157,21 @@ export default function Home() {
 
   if (error) {
     return (
-      <strong
-        style={{ color: "red", display: "flex", justifyContent: "center" }}
+      <main
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
       >
-        {error}
-      </strong>
+        <h1>All schools</h1>
+        <strong
+          style={{ color: "red", display: "flex", justifyContent: "center" }}
+        >
+          You don&apos;t have a school. Please contact your administrator.
+        </strong>
+      </main>
     );
   }
   if (isLoading) {
@@ -215,13 +235,15 @@ export default function Home() {
                   >
                     View Students
                   </Button>
-                  <Button
-                    variant="danger"
-                    className="ms-2"
-                    onClick={() => deleteSchool(school.id)}
-                  >
-                    Delete school
-                  </Button>
+                  {user?.isAdmin && (
+                    <Button
+                      variant="danger"
+                      className="ms-2"
+                      onClick={() => deleteSchool(school.id)}
+                    >
+                      Delete school
+                    </Button>
+                  )}
                 </td>
               </tr>
             ))}

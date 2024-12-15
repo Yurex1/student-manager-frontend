@@ -25,14 +25,14 @@ export const CreateSchoolModal = ({
 
   const handleSaveSchool = () => {
     let isValid = true;
-
+    schoolName = schoolName.trim();
     if (!schoolName.trim()) {
       setNameError("School name cannot be empty.");
       isValid = false;
     } else {
       setNameError("");
     }
-
+    schoolType = schoolType.trim();
     if (!schoolType.trim()) {
       setTypeError("School type cannot be empty.");
       isValid = false;
