@@ -46,7 +46,16 @@ export default function StudentsPage() {
 
         setStudents(studentsResponse.data);
         setAllSchools(schoolsResponse.data);
-      } catch (error) {
+        setError("");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
+        if (
+          error.response?.status === 404 &&
+          error.response.data.message === "No students found"
+        ) {
+          setError("No students found");
+          return;
+        }
         setError("Failed to load data. Please try again.");
         console.error("Error fetching data:", error);
       } finally {
