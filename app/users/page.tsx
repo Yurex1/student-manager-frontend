@@ -11,6 +11,7 @@ import { API_URL } from "@/app/config/API_URL";
 import SchoolType from "@/types/schoolType";
 const UsersPage = () => {
   const currentUser = useUserStore.getState().user;
+  console.log("current user", currentUser);
   const [users, setUsers] = useState<UserType[]>([]);
   const [schools, setSchools] = useState<SchoolType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -19,6 +20,7 @@ const UsersPage = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
   const setError = useUserStore((state) => state.setError);
+
   useEffect(() => {
     setError("");
     if (!currentUser) {
@@ -75,49 +77,45 @@ const UsersPage = () => {
     setShowModal(true);
   };
 
-  const handleSaveMe = async () => {
+  const handleSave = async (updatePassword?: string) => {
     if (!editingUser) return;
-    try {
-      await axios.put(
-        `${API_URL}/api/users/updateMe`,
-        {
+
+    const isCurrentUser = editingUser.id === currentUser?.id;
+    const endpoint = isCurrentUser
+      ? `${API_URL}/api/users/updateMe`
+      : `${API_URL}/api/users/updateUser/${editingUser.id}`;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const payload: any = isCurrentUser
+      ? {
           login: editingUser.login,
           name: editingUser.name,
-          password: editingUser.password,
-        },
-        { withCredentials: true }
-      );
-      useUserStore.setState({ user: editingUser });
+        }
+      : {
+          isAdmin: editingUser.isAdmin,
+          schoolId: editingUser.school?.id,
+        };
+
+    if (updatePassword) {
+      console.log("updatePassword", updatePassword);
+      payload.password = updatePassword;
+    } else {
+      console.log("no updatePassword");
+    }
+    try {
+      await axios.put(endpoint, payload, { withCredentials: true });
       alert("User updated successfully!");
       setShowModal(false);
       fetchUsers();
+      if (isCurrentUser) {
+        editingUser.password = "";
+        useUserStore.setState({ user: editingUser });
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       alert("Error updating user");
-      setError(error.response.data.message);
-      throw new Error(error.response.data.message);
-      // console.error("Error updating user:", error);
-    }
-  };
-
-  const handleSave = async () => {
-    if (!editingUser) return;
-
-    try {
-      await axios.put(
-        `${API_URL}/api/users/updateUser/${editingUser.id}`,
-        {
-          isAdmin: editingUser.isAdmin,
-          schoolId: editingUser.school?.id,
-        },
-        { withCredentials: true }
-      );
-      alert("User updated successfully!");
-      setShowModal(false);
-      fetchUsers();
-    } catch (error) {
-      alert("Error updating user");
-      console.log("Error updating user:", error);
+      console.error("Error updating user:", error);
+      setError(error.response?.data?.message || "An error occurred");
     }
   };
 
@@ -181,39 +179,42 @@ const UsersPage = () => {
           {[
             currentUser!,
             ...users.filter((user) => user.id !== currentUser?.id),
-          ].map((user: UserType) => (
-            <tr key={user.id}>
-              <td>{user.id}</td>
-              <td>{user.name}</td>
-              <td>{user.login}</td>
-              <td>{user.isAdmin ? "Yes" : "No"}</td>
-              <td>{user.school?.name || "No school"}</td>
-              <td>
-                {currentUser?.id === user.id ? (
-                  <Button variant="primary" onClick={() => handleEdit(user)}>
-                    Edit
-                  </Button>
-                ) : (
-                  <Button
-                    variant="primary"
-                    onClick={() => handleEdit(user)}
-                    disabled={!isAdmin}
-                  >
-                    Edit
-                  </Button>
-                )}
-                {currentUser?.isAdmin && currentUser?.id !== user.id && (
-                  <Button
-                    className="ms-2"
-                    variant="danger"
-                    onClick={() => handleDelete(user.id)}
-                  >
-                    Delete
-                  </Button>
-                )}
-              </td>
-            </tr>
-          ))}
+          ].map((user: UserType) => {
+            console.log(user);
+            return (
+              <tr key={user.id}>
+                <td>{user.id}</td>
+                <td>{user.name}</td>
+                <td>{user.login}</td>
+                <td>{user.isAdmin ? "Yes" : "No"}</td>
+                <td>{user.school?.name || "No school"}</td>
+                <td>
+                  {currentUser?.id === user.id ? (
+                    <Button variant="primary" onClick={() => handleEdit(user)}>
+                      Edit
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      onClick={() => handleEdit(user)}
+                      disabled={!isAdmin}
+                    >
+                      Edit
+                    </Button>
+                  )}
+                  {currentUser?.isAdmin && currentUser?.id !== user.id && (
+                    <Button
+                      className="ms-2"
+                      variant="danger"
+                      onClick={() => handleDelete(user.id)}
+                    >
+                      Delete
+                    </Button>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </Table>
       {currentUser?.isAdmin ? (
@@ -232,7 +233,7 @@ const UsersPage = () => {
           handleModalClose={handleModalClose}
           editingUser={editingUser!}
           setEditingUser={setEditingUser}
-          handleSave={handleSaveMe}
+          handleSave={handleSave}
         />
       )}
     </div>

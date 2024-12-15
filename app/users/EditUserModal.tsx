@@ -1,6 +1,7 @@
 import SchoolType from "@/types/schoolType";
 import UserType from "@/types/userType";
-import { Modal, Form, Button } from "react-bootstrap";
+import { useState } from "react";
+import { Modal, Form, Button, Alert } from "react-bootstrap";
 
 interface EditUserModalProps {
   currentUser: UserType;
@@ -9,7 +10,7 @@ interface EditUserModalProps {
   editingUser: UserType;
   setEditingUser: (user: UserType) => void;
   schools: SchoolType[];
-  handleSave: () => void;
+  handleSave: (changePassword?: string) => void;
 }
 
 const EditUserModal: React.FC<EditUserModalProps> = ({
@@ -21,6 +22,27 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   schools,
   handleSave,
 }) => {
+  const [newPassword, setNewPassword] = useState("");
+  const [repeatedPassword, setRepeatedPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSaveChanges = () => {
+    if (editingUser.id === currentUser.id) {
+      if (newPassword !== repeatedPassword) {
+        setError("Passwords do not match!");
+        return;
+      }
+      if (!newPassword) {
+        handleSave();
+        return;
+      }
+
+      handleSave(newPassword);
+      return;
+    }
+    handleSave();
+  };
+
   return (
     <Modal show={showModal} onHide={handleModalClose}>
       <Modal.Header closeButton>
@@ -69,14 +91,41 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                 ))}
               </Form.Control>
             </Form.Group>
+            {currentUser.id === editingUser.id && (
+              <>
+                <Form.Group controlId="formNewPassword" className="mt-3">
+                  <Form.Label>New Password</Form.Label>
+                  <Form.Control
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter a new password"
+                  />
+                </Form.Group>
+                <Form.Group controlId="formRepeatPassword" className="mt-3">
+                  <Form.Label>Repeat Password</Form.Label>
+                  <Form.Control
+                    type="password"
+                    value={repeatedPassword}
+                    onChange={(e) => setRepeatedPassword(e.target.value)}
+                    placeholder="Repeat the new password"
+                  />
+                </Form.Group>
+              </>
+            )}
           </Form>
+        )}
+        {error && (
+          <Alert variant="danger" className="mt-3">
+            {error}
+          </Alert>
         )}
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={handleModalClose}>
           Close
         </Button>
-        <Button variant="primary" onClick={handleSave}>
+        <Button variant="primary" onClick={handleSaveChanges}>
           Save Changes
         </Button>
       </Modal.Footer>

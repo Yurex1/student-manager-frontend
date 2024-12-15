@@ -105,16 +105,6 @@ export default function StudentsPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div
-        style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}
-      >
-        <Spinner animation="border" variant="primary" />
-        <span className="ms-2">Loading...</span>
-      </div>
-    );
-  }
   console.log(currentUser);
   if (!currentUser?.schoolId) {
     return (
@@ -133,6 +123,17 @@ export default function StudentsPage() {
           You don&apos;t have a school. Please contact your administrator
         </strong>
       </main>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div
+        style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}
+      >
+        <Spinner animation="border" variant="primary" />
+        <span className="ms-2">Loading...</span>
+      </div>
     );
   }
 

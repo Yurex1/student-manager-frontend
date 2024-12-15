@@ -40,7 +40,6 @@ const LoginPage = () => {
       const userResponse = await axios.get(`${API_URL}/api/users/me`, {
         withCredentials: true,
       });
-
       setUser(userResponse.data);
 
       router.push("/");
