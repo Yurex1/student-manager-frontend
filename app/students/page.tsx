@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { API_URL } from "@/app/config/API_URL";
 
 export default function StudentsPage() {
+  const currentUser = useUserStore.getState().user;
   const [students, setStudents] = useState<StudentType[]>([]);
   const [allSchools, setAllSchools] = useState<SchoolType[] | undefined>();
   const [showCreateStudentModal, setShowCreateStudentModal] = useState(false);
@@ -112,6 +113,26 @@ export default function StudentsPage() {
         <Spinner animation="border" variant="primary" />
         <span className="ms-2">Loading...</span>
       </div>
+    );
+  }
+  console.log(currentUser);
+  if (!currentUser?.schoolId) {
+    return (
+      <main
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <h1>All students</h1>
+        <strong
+          style={{ color: "red", display: "flex", justifyContent: "center" }}
+        >
+          You don&apos;t have a school. Please contact your administrator
+        </strong>
+      </main>
     );
   }
 
