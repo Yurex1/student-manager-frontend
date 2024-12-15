@@ -63,6 +63,10 @@ const CreateStudentModal: React.FC<CreateStudentModalProps> = ({
       );
       alert("Student created successfully");
       const student: StudentType = result.data;
+      //@ts-expect-error(school always exists)
+      student.school = allSchools?.find(
+        (school) => school.id === student.schoolId
+      );
       onStudentCreated(student);
       onClose();
     } catch (error) {

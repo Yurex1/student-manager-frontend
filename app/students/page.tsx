@@ -47,10 +47,10 @@ export default function StudentsPage() {
           withCredentials: true,
         });
         setAllSchools(schoolsResponse.data);
+
         const studentsResponse = await axios.get(`${API_URL}/api/students`, {
           withCredentials: true,
         });
-
         setStudents(studentsResponse.data);
 
         if (studentsResponse.data.length === 0) {
