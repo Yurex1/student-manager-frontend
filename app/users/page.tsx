@@ -11,7 +11,6 @@ import { API_URL } from "@/app/config/API_URL";
 import SchoolType from "@/types/schoolType";
 const UsersPage = () => {
   const currentUser = useUserStore.getState().user;
-  console.log("current user", currentUser);
   const [users, setUsers] = useState<UserType[]>([]);
   const [schools, setSchools] = useState<SchoolType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -85,7 +84,6 @@ const UsersPage = () => {
       ? `${API_URL}/api/users/updateMe`
       : `${API_URL}/api/users/updateUser/${editingUser.id}`;
 
-    console.log("editing", editingUser);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const payload: any = isCurrentUser
       ? {
@@ -96,12 +94,8 @@ const UsersPage = () => {
           isAdmin: editingUser.isAdmin,
           schoolId: editingUser.schoolId,
         };
-    console.log("payload", payload);
     if (updatePassword) {
-      console.log("updatePassword", updatePassword);
       payload.password = updatePassword;
-    } else {
-      console.log("no updatePassword");
     }
     try {
       await axios.put(endpoint, payload, { withCredentials: true });
@@ -181,7 +175,6 @@ const UsersPage = () => {
             currentUser!,
             ...users.filter((user) => user.id !== currentUser?.id),
           ].map((user: UserType) => {
-            console.log(user);
             return (
               <tr key={user.id}>
                 <td>{user.id}</td>

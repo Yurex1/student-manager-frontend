@@ -91,7 +91,6 @@ export default function Home() {
 
       const schools = await fetchSchools();
       setAllSchools(schools);
-      console.log("Schools:", schools);
       if (!schools?.length) {
         setError("There are no schools.");
       }

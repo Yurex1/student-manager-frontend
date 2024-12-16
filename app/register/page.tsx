@@ -34,8 +34,6 @@ export default function Home() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setLocalError(error.response.data.message.toString());
-
-      console.log("A", error.response.data.message.toString());
     }
   };
 
