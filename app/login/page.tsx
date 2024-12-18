@@ -31,7 +31,7 @@ const LoginPage = () => {
     e.preventDefault();
     axios.defaults.timeout = 10000;
     try {
-      const response = await axios.post(
+      await axios.post(
         `${API_URL}/api/auth/login`,
         {
           login,
