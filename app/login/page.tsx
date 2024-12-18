@@ -6,27 +6,32 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Form, Button, Container, Alert } from "react-bootstrap";
 import { API_URL } from "@/app/config/API_URL";
+import UserType from "@/types/userType";
 const LoginPage = () => {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
-  const user = useUserStore((state) => state.user);
-  const setUser = useUserStore((state) => state.setUser);
+  const [user, setUser] = useState<UserType | null>(null);
+  const SetUserToBrowser = useUserStore((state) => state.setUser);
   const error = useUserStore((state) => state.error);
   const setError = useUserStore((state) => state.setError);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setUser(useUserStore.getState().user);
     if (user) {
       router.push("/");
     }
     setError("");
-  }, [user, router]);
+
+    setIsMounted(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    axios.defaults.timeout = 10000;
     try {
-      await axios.post(
+      const response = await axios.post(
         `${API_URL}/api/auth/login`,
         {
           login,
@@ -36,19 +41,21 @@ const LoginPage = () => {
           withCredentials: true,
         }
       );
-
       const userResponse = await axios.get(`${API_URL}/api/users/me`, {
         withCredentials: true,
       });
-      setUser(userResponse.data);
+      SetUserToBrowser(userResponse.data);
 
       router.push("/");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.response.data.message);
-      console.log(err);
     }
   };
+
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <Container

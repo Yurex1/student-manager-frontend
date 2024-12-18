@@ -109,7 +109,6 @@ const UsersPage = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       alert("Error updating user");
-      console.error("Error updating user:", error);
       setError(error.response?.data?.message || "An error occurred");
     }
   };
